@@ -1,0 +1,1957 @@
+{
+  "actualizadoEl": "2026-11-23T18:15:00-03:00",
+  "notaEstado": "Datos semilla con el esquema definitivo. Se sobrescriben automáticamente al activar el cron de GitHub Actions.",
+  "poceados": {
+    "quini6": {
+      "nombre": "Quini 6",
+      "fuente": "Lotería de Santa Fe",
+      "fuenteUrl": "https://www.loteriasantafe.gov.ar/quini-6-2/",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 7.500.000.000",
+      "rango": [
+        0,
+        45
+      ],
+      "cantidadBolillas": 6,
+      "ultimo": {
+        "sorteo": 3428,
+        "fecha": "2026-11-22",
+        "modalidades": [
+          {
+            "nombre": "Tradicional Primer Sorteo",
+            "bolillas": [
+              4,
+              12,
+              19,
+              28,
+              35,
+              41
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 2.685.331.440",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 18,
+                "pozo": "$ 54.250.416",
+                "premioIndividual": "$ 3.013.912"
+              },
+              {
+                "aciertos": "4 aciertos",
+                "ganadores": 871,
+                "pozo": "$ 16.275.124",
+                "premioIndividual": "$ 18.685"
+              }
+            ]
+          },
+          {
+            "nombre": "La Segunda del Quini",
+            "bolillas": [
+              2,
+              11,
+              17,
+              24,
+              33,
+              44
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 3.044.700.540",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 56,
+                "pozo": "$ 54.250.416",
+                "premioIndividual": "$ 968.757"
+              },
+              {
+                "aciertos": "4 aciertos",
+                "ganadores": 3449,
+                "pozo": "$ 16.275.124",
+                "premioIndividual": "$ 4.718"
+              }
+            ]
+          },
+          {
+            "nombre": "Revancha",
+            "bolillas": [
+              0,
+              9,
+              15,
+              22,
+              31,
+              40
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 1.100.000.000",
+                "premioIndividual": "Vacante"
+              }
+            ]
+          },
+          {
+            "nombre": "Siempre Sale",
+            "bolillas": [
+              5,
+              14,
+              21,
+              29,
+              38,
+              43
+            ],
+            "premios": [
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 24,
+                "pozo": "$ 240.000.000",
+                "premioIndividual": "$ 10.000.000"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 3427,
+          "fecha": "2026-11-18",
+          "modalidades": [
+            {
+              "nombre": "Tradicional Primer Sorteo",
+              "bolillas": [
+                1,
+                8,
+                16,
+                25,
+                34,
+                42
+              ],
+              "premios": [
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 2.410.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            },
+            {
+              "nombre": "La Segunda del Quini",
+              "bolillas": [
+                3,
+                10,
+                18,
+                27,
+                36,
+                45
+              ],
+              "premios": [
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 2.800.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "lotoPlus": {
+      "nombre": "Loto Plus",
+      "fuente": "Lotería de la Ciudad",
+      "fuenteUrl": "https://www.loteriadelaciudad.gob.ar/",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 4.900.000.000",
+      "rango": [
+        0,
+        45
+      ],
+      "cantidadBolillas": 6,
+      "ultimo": {
+        "sorteo": 3938,
+        "fecha": "2026-11-21",
+        "numeroPlus": 7,
+        "modalidades": [
+          {
+            "nombre": "Tradicional",
+            "bolillas": [
+              3,
+              14,
+              20,
+              29,
+              37,
+              45
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 1.450.000.000",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 12,
+                "pozo": "$ 18.000.000",
+                "premioIndividual": "$ 1.500.000"
+              }
+            ]
+          },
+          {
+            "nombre": "Match",
+            "bolillas": [
+              6,
+              11,
+              23,
+              30,
+              39,
+              44
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 1.120.000.000",
+                "premioIndividual": "Vacante"
+              }
+            ]
+          },
+          {
+            "nombre": "Desquite",
+            "bolillas": [
+              1,
+              8,
+              19,
+              26,
+              34,
+              41
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 890.000.000",
+                "premioIndividual": "Vacante"
+              }
+            ]
+          },
+          {
+            "nombre": "Sale o Sale",
+            "bolillas": [
+              5,
+              13,
+              22,
+              31,
+              38,
+              42
+            ],
+            "premios": [
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 9,
+                "pozo": "$ 36.000.000",
+                "premioIndividual": "$ 4.000.000"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 3937,
+          "fecha": "2026-11-18",
+          "numeroPlus": 4,
+          "modalidades": [
+            {
+              "nombre": "Tradicional",
+              "bolillas": [
+                2,
+                9,
+                18,
+                25,
+                33,
+                40
+              ],
+              "premios": [
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 1.320.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "telekino": {
+      "nombre": "Telekino",
+      "fuente": "IPLyC / Extracto Oficial",
+      "fuenteUrl": "https://cas.gob.ar/juegos/sorteos/resultados?juego=telekino",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 1.850.000.000",
+      "rango": [
+        1,
+        25
+      ],
+      "cantidadBolillas": 15,
+      "ultimo": {
+        "sorteo": 2455,
+        "fecha": "2026-11-22",
+        "modalidades": [
+          {
+            "nombre": "Telekino Tradicional",
+            "bolillas": [
+              1,
+              2,
+              4,
+              6,
+              8,
+              9,
+              11,
+              13,
+              15,
+              17,
+              18,
+              20,
+              22,
+              23,
+              25
+            ],
+            "premios": [
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 1.576.504.379",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "14 aciertos",
+                "ganadores": 19,
+                "pozo": "$ 14.675.163",
+                "premioIndividual": "$ 772.377"
+              },
+              {
+                "aciertos": "13 aciertos",
+                "ganadores": 684,
+                "pozo": "$ 44.297.208",
+                "premioIndividual": "$ 64.762"
+              },
+              {
+                "aciertos": "12 aciertos",
+                "ganadores": 8028,
+                "pozo": "$ 151.913.844",
+                "premioIndividual": "$ 18.923"
+              }
+            ]
+          },
+          {
+            "nombre": "Rekino",
+            "bolillas": [
+              2,
+              3,
+              5,
+              7,
+              8,
+              10,
+              12,
+              14,
+              16,
+              17,
+              19,
+              21,
+              22,
+              24,
+              25
+            ],
+            "premios": [
+              {
+                "aciertos": "14 aciertos",
+                "ganadores": 14,
+                "pozo": "$ 3.500.000",
+                "premioIndividual": "$ 250.000"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 2454,
+          "fecha": "2026-11-15",
+          "modalidades": [
+            {
+              "nombre": "Telekino Tradicional",
+              "bolillas": [
+                1,
+                3,
+                5,
+                6,
+                9,
+                10,
+                12,
+                14,
+                15,
+                18,
+                19,
+                21,
+                22,
+                24,
+                25
+              ],
+              "premios": [
+                {
+                  "aciertos": "15 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 1.420.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "brinco": {
+      "nombre": "Brinco",
+      "fuente": "Lotería de Santa Fe",
+      "fuenteUrl": "https://www.loteriasantafe.gov.ar/brinco-3/",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 850.000.000",
+      "rango": [
+        0,
+        39
+      ],
+      "cantidadBolillas": 6,
+      "ultimo": {
+        "sorteo": 1381,
+        "fecha": "2026-11-22",
+        "modalidades": [
+          {
+            "nombre": "Brinco Tradicional",
+            "bolillas": [
+              6,
+              9,
+              16,
+              28,
+              33,
+              34
+            ],
+            "premios": [
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 740.000.000",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 11,
+                "pozo": "$ 6.600.000",
+                "premioIndividual": "$ 600.000"
+              },
+              {
+                "aciertos": "4 aciertos",
+                "ganadores": 412,
+                "pozo": "$ 4.120.000",
+                "premioIndividual": "$ 10.000"
+              }
+            ]
+          },
+          {
+            "nombre": "Brinco Junior Siempre Sale",
+            "bolillas": [
+              2,
+              11,
+              18,
+              25,
+              31,
+              38
+            ],
+            "premios": [
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": 15,
+                "pozo": "$ 25.000.000",
+                "premioIndividual": "$ 1.666.666"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 1380,
+          "fecha": "2026-11-15",
+          "modalidades": [
+            {
+              "nombre": "Brinco Tradicional",
+              "bolillas": [
+                1,
+                7,
+                14,
+                22,
+                30,
+                37
+              ],
+              "premios": [
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 630.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "loto5": {
+      "nombre": "Loto 5 Plus",
+      "fuente": "Lotería de la Ciudad",
+      "fuenteUrl": "https://www.loteriadelaciudad.gob.ar/",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 120.000.000",
+      "rango": [
+        0,
+        36
+      ],
+      "cantidadBolillas": 5,
+      "ultimo": {
+        "sorteo": 1431,
+        "fecha": "2026-11-21",
+        "modalidades": [
+          {
+            "nombre": "Sorteo Tradicional (00 al 36)",
+            "bolillas": [
+              4,
+              12,
+              21,
+              29,
+              36
+            ],
+            "premios": [
+              {
+                "aciertos": "5 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 105.000.000",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "4 aciertos",
+                "ganadores": 22,
+                "pozo": "$ 4.400.000",
+                "premioIndividual": "$ 200.000"
+              },
+              {
+                "aciertos": "3 aciertos",
+                "ganadores": 480,
+                "pozo": "$ 1.440.000",
+                "premioIndividual": "$ 3.000"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 1430,
+          "fecha": "2026-11-14",
+          "modalidades": [
+            {
+              "nombre": "Sorteo Tradicional (00 al 36)",
+              "bolillas": [
+                0,
+                11,
+                19,
+                27,
+                34
+              ],
+              "premios": [
+                {
+                  "aciertos": "5 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 92.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "laPoceada": {
+      "nombre": "La Poceada de la Ciudad",
+      "fuente": "Lotería de la Ciudad",
+      "fuenteUrl": "https://poceada.loteriadelaciudad.gob.ar/",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 917.400.000",
+      "rango": [
+        0,
+        99
+      ],
+      "cantidadBolillas": 8,
+      "ultimo": {
+        "sorteo": 9781,
+        "fecha": "2026-11-21",
+        "modalidades": [
+          {
+            "nombre": "Extracto de 20 números (00 al 99)",
+            "bolillas": [
+              3,
+              8,
+              12,
+              17,
+              24,
+              29,
+              35,
+              41,
+              46,
+              52,
+              58,
+              63,
+              67,
+              71,
+              76,
+              82,
+              85,
+              90,
+              94,
+              98
+            ],
+            "premios": [
+              {
+                "aciertos": "8 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 860.000.000",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "7 aciertos",
+                "ganadores": 34,
+                "pozo": "$ 17.000.000",
+                "premioIndividual": "$ 500.000"
+              },
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": 620,
+                "pozo": "$ 9.300.000",
+                "premioIndividual": "$ 15.000"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 9780,
+          "fecha": "2026-11-19",
+          "modalidades": [
+            {
+              "nombre": "Extracto de 20 números (00 al 99)",
+              "bolillas": [
+                1,
+                6,
+                14,
+                19,
+                22,
+                28,
+                33,
+                39,
+                44,
+                50,
+                55,
+                61,
+                66,
+                72,
+                77,
+                81,
+                86,
+                91,
+                95,
+                99
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 810.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "quinielaPlus": {
+      "nombre": "Quiniela Plus",
+      "fuente": "Lotería de la Provincia de Buenos Aires",
+      "fuenteUrl": "https://loteria.gba.gob.ar/resultados",
+      "estadoFuente": "seed_inicial",
+      "pozoProximo": "$ 380.000.000",
+      "rango": [
+        0,
+        99
+      ],
+      "cantidadBolillas": 8,
+      "ultimo": {
+        "sorteo": 12920,
+        "fecha": "2026-11-21",
+        "modalidades": [
+          {
+            "nombre": "Quiniela Plus (Tradicional)",
+            "bolillas": [
+              2,
+              9,
+              15,
+              21,
+              27,
+              32,
+              38,
+              44,
+              49,
+              53,
+              59,
+              64,
+              68,
+              73,
+              79,
+              84,
+              88,
+              92,
+              96,
+              99
+            ],
+            "premios": [
+              {
+                "aciertos": "8 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 320.000.000",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "7 aciertos",
+                "ganadores": 16,
+                "pozo": "$ 12.800.000",
+                "premioIndividual": "$ 800.000"
+              }
+            ]
+          },
+          {
+            "nombre": "Super Plus",
+            "bolillas": [
+              2,
+              9,
+              15,
+              21,
+              27,
+              32,
+              38,
+              44,
+              49,
+              53,
+              59,
+              64,
+              68,
+              73,
+              79,
+              84,
+              88,
+              92,
+              96,
+              99
+            ],
+            "premios": [
+              {
+                "aciertos": "8 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 45.000.000",
+                "premioIndividual": "Vacante"
+              }
+            ]
+          },
+          {
+            "nombre": "Chance Plus",
+            "bolillas": [
+              2,
+              9,
+              15,
+              21,
+              27,
+              32,
+              38,
+              44,
+              49,
+              53,
+              59,
+              64,
+              68,
+              73,
+              79,
+              84,
+              88,
+              92,
+              96,
+              99
+            ],
+            "premios": [
+              {
+                "aciertos": "8 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 15.000.000",
+                "premioIndividual": "Vacante"
+              }
+            ]
+          }
+        ]
+      },
+      "historico": [
+        {
+          "sorteo": 12919,
+          "fecha": "2026-11-20",
+          "modalidades": [
+            {
+              "nombre": "Quiniela Plus (Tradicional)",
+              "bolillas": [
+                0,
+                5,
+                11,
+                18,
+                23,
+                29,
+                34,
+                40,
+                46,
+                51,
+                57,
+                62,
+                69,
+                74,
+                80,
+                85,
+                89,
+                93,
+                97,
+                98
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 305.000.000",
+                  "premioIndividual": "Vacante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "quinielas": {
+    "ciudad": {
+      "nombre": "Ciudad (CABA)",
+      "fuente": "Lotería de la Ciudad",
+      "fuenteUrl": "https://quiniela.loteriadelaciudad.gob.ar/",
+      "fechas": {
+        "2026-11-23": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 51901,
+            "letras": "A-F-M-R",
+            "extracto": [
+              "5291",
+              "5698",
+              "6105",
+              "6512",
+              "6919",
+              "7326",
+              "7733",
+              "8140",
+              "8547",
+              "8954",
+              "9361",
+              "9768",
+              "0175",
+              "0582",
+              "0989",
+              "1396",
+              "1803",
+              "2210",
+              "2617",
+              "3024"
+            ]
+          },
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 51902,
+            "letras": "B-H-K-T",
+            "extracto": [
+              "8177",
+              "8806",
+              "9435",
+              "0064",
+              "0693",
+              "1322",
+              "1951",
+              "2580",
+              "3209",
+              "3838",
+              "4467",
+              "5096",
+              "5725",
+              "6354",
+              "6983",
+              "7612",
+              "8241",
+              "8870",
+              "9499",
+              "0128"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 51903,
+            "letras": "C-J-P-Z",
+            "extracto": [
+              "1063",
+              "1914",
+              "2765",
+              "3616",
+              "4467",
+              "5318",
+              "6169",
+              "7020",
+              "7871",
+              "8722",
+              "9573",
+              "0424",
+              "1275",
+              "2126",
+              "2977",
+              "3828",
+              "4679",
+              "5530",
+              "6381",
+              "7232"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 51904,
+            "letras": "D-L-N-V",
+            "extracto": [
+              "3949",
+              "5022",
+              "6095",
+              "7168",
+              "8241",
+              "9314",
+              "0387",
+              "1460",
+              "2533",
+              "3606",
+              "4679",
+              "5752",
+              "6825",
+              "7898",
+              "8971",
+              "0044",
+              "1117",
+              "2190",
+              "3263",
+              "4336"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 51905,
+            "letras": "Pendiente",
+            "extracto": []
+          }
+        },
+        "2026-11-21": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 51896,
+            "letras": "A-D-S-W",
+            "extracto": [
+              "4911",
+              "6058",
+              "7205",
+              "8352",
+              "9499",
+              "0646",
+              "1793",
+              "2940",
+              "4087",
+              "5234",
+              "6381",
+              "7528",
+              "8675",
+              "9822",
+              "0969",
+              "2116",
+              "3263",
+              "4410",
+              "5557",
+              "6704"
+            ]
+          },
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 51897,
+            "letras": "E-G-O-X",
+            "extracto": [
+              "7797",
+              "9166",
+              "0535",
+              "1904",
+              "3273",
+              "4642",
+              "6011",
+              "7380",
+              "8749",
+              "0118",
+              "1487",
+              "2856",
+              "4225",
+              "5594",
+              "6963",
+              "8332",
+              "9701",
+              "1070",
+              "2439",
+              "3808"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 51898,
+            "letras": "F-I-Q-Y",
+            "extracto": [
+              "9721",
+              "1238",
+              "2755",
+              "4272",
+              "5789",
+              "7306",
+              "8823",
+              "0340",
+              "1857",
+              "3374",
+              "4891",
+              "6408",
+              "7925",
+              "9442",
+              "0959",
+              "2476",
+              "3993",
+              "5510",
+              "7027",
+              "8544"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 51899,
+            "letras": "H-M-T-Z",
+            "extracto": [
+              "0683",
+              "2274",
+              "3865",
+              "5456",
+              "7047",
+              "8638",
+              "0229",
+              "1820",
+              "3411",
+              "5002",
+              "6593",
+              "8184",
+              "9775",
+              "1366",
+              "2957",
+              "4548",
+              "6139",
+              "7730",
+              "9321",
+              "0912"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 51900,
+            "letras": "K-N-P-R",
+            "extracto": [
+              "2607",
+              "4346",
+              "6085",
+              "7824",
+              "9563",
+              "1302",
+              "3041",
+              "4780",
+              "6519",
+              "8258",
+              "9997",
+              "1736",
+              "3475",
+              "5214",
+              "6953",
+              "8692",
+              "0431",
+              "2170",
+              "3909",
+              "5648"
+            ]
+          }
+        }
+      }
+    },
+    "provincia": {
+      "nombre": "Provincia de Buenos Aires",
+      "fuente": "Lotería de la Provincia de Buenos Aires",
+      "fuenteUrl": "https://loteria.gba.gob.ar/resultados",
+      "fechas": {
+        "2026-11-23": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 44201,
+            "extracto": [
+              "5493",
+              "7454",
+              "9415",
+              "1376",
+              "3337",
+              "5298",
+              "7259",
+              "9220",
+              "1181",
+              "3142",
+              "5103",
+              "7064",
+              "9025",
+              "0986",
+              "2947",
+              "4908",
+              "6869",
+              "8830",
+              "0791",
+              "2752"
+            ]
+          },
+          "primero": {
+            "nombre": "El Primero",
+            "hora": "12:00",
+            "sorteo": 44202,
+            "extracto": [
+              "8379",
+              "0562",
+              "2745",
+              "4928",
+              "7111",
+              "9294",
+              "1477",
+              "3660",
+              "5843",
+              "8026",
+              "0209",
+              "2392",
+              "4575",
+              "6758",
+              "8941",
+              "1124",
+              "3307",
+              "5490",
+              "7673",
+              "9856"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 44203,
+            "extracto": [
+              "9341",
+              "1598",
+              "3855",
+              "6112",
+              "8369",
+              "0626",
+              "2883",
+              "5140",
+              "7397",
+              "9654",
+              "1911",
+              "4168",
+              "6425",
+              "8682",
+              "0939",
+              "3196",
+              "5453",
+              "7710",
+              "9967",
+              "2224"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 44204,
+            "extracto": [
+              "2227",
+              "4706",
+              "7185",
+              "9664",
+              "2143",
+              "4622",
+              "7101",
+              "9580",
+              "2059",
+              "4538",
+              "7017",
+              "9496",
+              "1975",
+              "4454",
+              "6933",
+              "9412",
+              "1891",
+              "4370",
+              "6849",
+              "9328"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 44205,
+            "extracto": []
+          }
+        },
+        "2026-11-21": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 44196,
+            "extracto": [
+              "4151",
+              "6778",
+              "9405",
+              "2032",
+              "4659",
+              "7286",
+              "9913",
+              "2540",
+              "5167",
+              "7794",
+              "0421",
+              "3048",
+              "5675",
+              "8302",
+              "0929",
+              "3556",
+              "6183",
+              "8810",
+              "1437",
+              "4064"
+            ]
+          },
+          "primero": {
+            "nombre": "El Primero",
+            "hora": "12:00",
+            "sorteo": 44197,
+            "extracto": [
+              "5113",
+              "7814",
+              "0515",
+              "3216",
+              "5917",
+              "8618",
+              "1319",
+              "4020",
+              "6721",
+              "9422",
+              "2123",
+              "4824",
+              "7525",
+              "0226",
+              "2927",
+              "5628",
+              "8329",
+              "1030",
+              "3731",
+              "6432"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 44198,
+            "extracto": [
+              "7999",
+              "0922",
+              "3845",
+              "6768",
+              "9691",
+              "2614",
+              "5537",
+              "8460",
+              "1383",
+              "4306",
+              "7229",
+              "0152",
+              "3075",
+              "5998",
+              "8921",
+              "1844",
+              "4767",
+              "7690",
+              "0613",
+              "3536"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 44199,
+            "extracto": [
+              "9923",
+              "2994",
+              "6065",
+              "9136",
+              "2207",
+              "5278",
+              "8349",
+              "1420",
+              "4491",
+              "7562",
+              "0633",
+              "3704",
+              "6775",
+              "9846",
+              "2917",
+              "5988",
+              "9059",
+              "2130",
+              "5201",
+              "8272"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 44200,
+            "extracto": [
+              "2809",
+              "6102",
+              "9395",
+              "2688",
+              "5981",
+              "9274",
+              "2567",
+              "5860",
+              "9153",
+              "2446",
+              "5739",
+              "9032",
+              "2325",
+              "5618",
+              "8911",
+              "2204",
+              "5497",
+              "8790",
+              "2083",
+              "5376"
+            ]
+          }
+        }
+      }
+    },
+    "santafe": {
+      "nombre": "Santa Fe",
+      "fuente": "Lotería de Santa Fe",
+      "fuenteUrl": "https://www.loteriasantafe.gov.ar/",
+      "fechas": {
+        "2026-11-23": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 31201,
+            "extracto": [
+              "6657",
+              "0246",
+              "3835",
+              "7424",
+              "1013",
+              "4602",
+              "8191",
+              "1780",
+              "5369",
+              "8958",
+              "2547",
+              "6136",
+              "9725",
+              "3314",
+              "6903",
+              "0492",
+              "4081",
+              "7670",
+              "1259",
+              "4848"
+            ]
+          },
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 31202,
+            "extracto": [
+              "8581",
+              "2318",
+              "6055",
+              "9792",
+              "3529",
+              "7266",
+              "1003",
+              "4740",
+              "8477",
+              "2214",
+              "5951",
+              "9688",
+              "3425",
+              "7162",
+              "0899",
+              "4636",
+              "8373",
+              "2110",
+              "5847",
+              "9584"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 31203,
+            "extracto": [
+              "9543",
+              "3354",
+              "7165",
+              "0976",
+              "4787",
+              "8598",
+              "2409",
+              "6220",
+              "0031",
+              "3842",
+              "7653",
+              "1464",
+              "5275",
+              "9086",
+              "2897",
+              "6708",
+              "0519",
+              "4330",
+              "8141",
+              "1952"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 31204,
+            "extracto": [
+              "1467",
+              "5426",
+              "9385",
+              "3344",
+              "7303",
+              "1262",
+              "5221",
+              "9180",
+              "3139",
+              "7098",
+              "1057",
+              "5016",
+              "8975",
+              "2934",
+              "6893",
+              "0852",
+              "4811",
+              "8770",
+              "2729",
+              "6688"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 31205,
+            "extracto": []
+          }
+        }
+      }
+    },
+    "cordoba": {
+      "nombre": "Córdoba",
+      "fuente": "Lotería de Córdoba",
+      "fuenteUrl": "https://loteriadecordoba.com.ar/",
+      "fechas": {
+        "2026-11-23": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 22801,
+            "extracto": [
+              "2429",
+              "6462",
+              "0495",
+              "4528",
+              "8561",
+              "2594",
+              "6627",
+              "0660",
+              "4693",
+              "8726",
+              "2759",
+              "6792",
+              "0825",
+              "4858",
+              "8891",
+              "2924",
+              "6957",
+              "0990",
+              "5023",
+              "9056"
+            ]
+          },
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 22802,
+            "extracto": [
+              "4353",
+              "8534",
+              "2715",
+              "6896",
+              "1077",
+              "5258",
+              "9439",
+              "3620",
+              "7801",
+              "1982",
+              "6163",
+              "0344",
+              "4525",
+              "8706",
+              "2887",
+              "7068",
+              "1249",
+              "5430",
+              "9611",
+              "3792"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 22803,
+            "extracto": [
+              "1087",
+              "5786",
+              "0485",
+              "5184",
+              "9883",
+              "4582",
+              "9281",
+              "3980",
+              "8679",
+              "3378",
+              "8077",
+              "2776",
+              "7475",
+              "2174",
+              "6873",
+              "1572",
+              "6271",
+              "0970",
+              "5669",
+              "0368"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 22804,
+            "extracto": [
+              "3011",
+              "7858",
+              "2705",
+              "7552",
+              "2399",
+              "7246",
+              "2093",
+              "6940",
+              "1787",
+              "6634",
+              "1481",
+              "6328",
+              "1175",
+              "6022",
+              "0869",
+              "5716",
+              "0563",
+              "5410",
+              "0257",
+              "5104"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 22805,
+            "extracto": []
+          }
+        }
+      }
+    },
+    "entrerios": {
+      "nombre": "Entre Ríos",
+      "fuente": "IAFAS Entre Ríos",
+      "fuenteUrl": "https://www.iafas.gov.ar/",
+      "fechas": {
+        "2026-11-23": {
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 19102,
+            "extracto": [
+              "5897",
+              "0966",
+              "6035",
+              "1104",
+              "6173",
+              "1242",
+              "6311",
+              "1380",
+              "6449",
+              "1518",
+              "6587",
+              "1656",
+              "6725",
+              "1794",
+              "6863",
+              "1932",
+              "7001",
+              "2070",
+              "7139",
+              "2208"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 19103,
+            "extracto": [
+              "6859",
+              "2002",
+              "7145",
+              "2288",
+              "7431",
+              "2574",
+              "7717",
+              "2860",
+              "8003",
+              "3146",
+              "8289",
+              "3432",
+              "8575",
+              "3718",
+              "8861",
+              "4004",
+              "9147",
+              "4290",
+              "9433",
+              "4576"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 19104,
+            "extracto": [
+              "1669",
+              "7182",
+              "2695",
+              "8208",
+              "3721",
+              "9234",
+              "4747",
+              "0260",
+              "5773",
+              "1286",
+              "6799",
+              "2312",
+              "7825",
+              "3338",
+              "8851",
+              "4364",
+              "9877",
+              "5390",
+              "0903",
+              "6416"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 19105,
+            "extracto": []
+          }
+        }
+      }
+    },
+    "mendoza": {
+      "nombre": "Mendoza",
+      "fuente": "Instituto Provincial de Juegos y Casinos",
+      "fuenteUrl": "https://www.ipjyc.mendoza.gov.ar/",
+      "fechas": {
+        "2026-11-23": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 17501,
+            "extracto": [
+              "2631",
+              "8218",
+              "3805",
+              "9392",
+              "4979",
+              "0566",
+              "6153",
+              "1740",
+              "7327",
+              "2914",
+              "8501",
+              "4088",
+              "9675",
+              "5262",
+              "0849",
+              "6436",
+              "2023",
+              "7610",
+              "3197",
+              "8784"
+            ]
+          },
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 17502,
+            "extracto": [
+              "5517",
+              "1326",
+              "7135",
+              "2944",
+              "8753",
+              "4562",
+              "0371",
+              "6180",
+              "1989",
+              "7798",
+              "3607",
+              "9416",
+              "5225",
+              "1034",
+              "6843",
+              "2652",
+              "8461",
+              "4270",
+              "0079",
+              "5888"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 17503,
+            "extracto": [
+              "8403",
+              "4434",
+              "0465",
+              "6496",
+              "2527",
+              "8558",
+              "4589",
+              "0620",
+              "6651",
+              "2682",
+              "8713",
+              "4744",
+              "0775",
+              "6806",
+              "2837",
+              "8868",
+              "4899",
+              "0930",
+              "6961",
+              "2992"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 17504,
+            "extracto": [
+              "0327",
+              "6506",
+              "2685",
+              "8864",
+              "5043",
+              "1222",
+              "7401",
+              "3580",
+              "9759",
+              "5938",
+              "2117",
+              "8296",
+              "4475",
+              "0654",
+              "6833",
+              "3012",
+              "9191",
+              "5370",
+              "1549",
+              "7728"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 17505,
+            "extracto": []
+          }
+        }
+      }
+    },
+    "corrientes": {
+      "nombre": "Corrientes",
+      "fuente": "Lotería Correntina",
+      "fuenteUrl": "https://www.loteriacorrentina.gov.ar/",
+      "fechas": {
+        "2026-11-23": {
+          "primera": {
+            "nombre": "La Primera",
+            "hora": "12:00",
+            "sorteo": 15402,
+            "extracto": [
+              "3213",
+              "9614",
+              "6015",
+              "2416",
+              "8817",
+              "5218",
+              "1619",
+              "8020",
+              "4421",
+              "0822",
+              "7223",
+              "3624",
+              "0025",
+              "6426",
+              "2827",
+              "9228",
+              "5629",
+              "2030",
+              "8431",
+              "4832"
+            ]
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 15403,
+            "extracto": [
+              "6099",
+              "2722",
+              "9345",
+              "5968",
+              "2591",
+              "9214",
+              "5837",
+              "2460",
+              "9083",
+              "5706",
+              "2329",
+              "8952",
+              "5575",
+              "2198",
+              "8821",
+              "5444",
+              "2067",
+              "8690",
+              "5313",
+              "1936"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 15404,
+            "extracto": [
+              "7061",
+              "3758",
+              "0455",
+              "7152",
+              "3849",
+              "0546",
+              "7243",
+              "3940",
+              "0637",
+              "7334",
+              "4031",
+              "0728",
+              "7425",
+              "4122",
+              "0819",
+              "7516",
+              "4213",
+              "0910",
+              "7607",
+              "4304"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 15405,
+            "extracto": []
+          }
+        }
+      }
+    }
+  }
+}
