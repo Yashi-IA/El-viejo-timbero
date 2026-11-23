@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Viejo Timbero — Resultados de Quini 6, Loto Plus, Telekino y Loterías de Argentina</title>
+  <meta name="description" content="Consultá los últimos resultados y sorteos anteriores de Quini 6, Loto Plus, Telekino, Brinco, Loto 5 Plus, La Poceada y Quiniela Plus en Argentina.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://elviejotimbero.netlify.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="El Viejo Timbero">
+  <meta property="og:title" content="El Viejo Timbero — Resultados de Quini 6, Loto Plus, Telekino y Loterías de Argentina">
+  <meta property="og:description" content="Consultá los últimos resultados y sorteos anteriores de Quini 6, Loto Plus, Telekino, Brinco, Loto 5 Plus, La Poceada y Quiniela Plus en Argentina.">
+  <meta property="og:url" content="https://elviejotimbero.netlify.app/">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "El Viejo Timbero",
+    "url": "https://elviejotimbero.netlify.app/",
+    "inLanguage": "es-AR",
+    "description": "Resultados informativos de sorteos poceados y quinielas de Argentina, controlador de boletas y simulador recreativo."
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Inicio de El Viejo Timbero">
+        <span class="brand-badge">TIMBERO</span>
+        <span>
+          <span class="brand-title"><span class="el-viejo">EL VIEJO</span> <span class="timbero">TIMBERO</span></span>
+          <span class="brand-sub">Resultados, control de boletas y guías oficiales</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+          <a class="nav-pill active" href="index.html">Sorteos</a>
+          <a class="nav-pill" href="quinielas.html">Quinielas</a>
+          <a class="nav-pill" href="controlar-boleta.html">Controlar Boleta</a>
+          <a class="nav-pill" href="simulador.html">Simulador</a>
+          <a class="nav-pill" href="mis-jugadas.html">Mis Jugadas</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">☀️</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor publicitario oculto por CSS hasta que AdSense entregue un anuncio activo -->
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <main class="container">
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <div id="game-pills" class="subnav-pills" style="margin-bottom:0;"></div>
+      <span id="last-updated" style="font-size:0.82rem;color:var(--muted);"></span>
+    </div>
+
+    <div id="sorteos-root">
+      <div class="card">Cargando últimos resultados...</div>
+    </div>
+
+    <section class="editorial-section">
+      <h2>Guía rápida de días y horarios oficiales de sorteos en Argentina</h2>
+      <p>Para verificar tus tickets sin confusiones, reunimos los días y horarios habituales de transmisión de los principales juegos poceados del país. Los extractos definitivos se publican luego del cierre de actas de cada organismo regulador.</p>
+      <div class="editorial-grid">
+        <div>
+          <h3>Quini 6 y Brinco (Lotería de Santa Fe)</h3>
+          <p>El <strong>Quini 6</strong> se sortea los <strong>miércoles y domingos a las 21:15 hs</strong> con cuatro modalidades principales (Tradicional Primer Sorteo, La Segunda, Revancha y Siempre Sale) más Premio Extra. El <strong>Brinco</strong> realiza su sorteo semanal todos los <strong>domingos a las 21:00 hs</strong>, incluyendo la instancia Brinco Junior Siempre Sale. Fuente oficial: <a href="https://www.loteriasantafe.gov.ar/" target="_blank" rel="noopener noreferrer">Lotería de Santa Fe</a>.</p>
+
+          <h3>Loto Plus, Loto 5 Plus y La Poceada</h3>
+          <p>Administrados por <a href="https://www.loteriadelaciudad.gob.ar/" target="_blank" rel="noopener noreferrer">Lotería de la Ciudad de Buenos Aires</a>, el <strong>Loto Plus</strong> sortea <strong>miércoles y sábados a las 22:00 hs</strong> (Tradicional, Match, Desquite, Sale o Sale y Número Plus). El <strong>Loto 5 Plus</strong> se juega los <strong>sábados a las 22:30 hs</strong> (números del 00 al 36), y <strong>La Poceada de la Ciudad</strong> sortea de <strong>lunes a sábados a las 21:00 hs</strong>.</p>
+        </div>
+        <div>
+          <h3>Telekino y Quiniela Plus</h3>
+          <p>El <strong>Telekino</strong> y su modalidad <strong>Rekino</strong> se sortean todos los <strong>domingos a las 15:00 hs</strong> (15 bolillas del 01 al 25, más premios especiales al número de cartón). La <strong>Quiniela Plus</strong> (junto con Super Plus y Chance Plus) depende de <a href="https://loteria.gba.gob.ar/resultados" target="_blank" rel="noopener noreferrer">Lotería de la Provincia de Buenos Aires</a> y acompaña los sorteos nocturnos de lunes a sábados a las 21:00 hs.</p>
+
+          <h3>Preguntas frecuentes</h3>
+          <details class="faq-item">
+            <summary>¿Los resultados publicados aquí reemplazan al extracto oficial?</summary>
+            <p>No. Este sitio tiene fines estrictamente informativos. Antes de desechar un ticket o iniciar un cobro, corroborá siempre los números en tu agencia oficial o en el extracto del organismo emisor.</p>
+          </details>
+          <details class="faq-item">
+            <summary>¿Cómo puedo controlar si mi boleta tuvo aciertos?</summary>
+            <p>Ingresá a nuestro panel de <a href="controlar-boleta.html">Controlar Boleta</a>, elegí el juego e introducí tus números para ver en segundos cuántas coincidencias obtuviste en cada modalidad.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Enlaces legales e institucionales">
+        <a href="acerca.html">Acerca del Proyecto</a>
+        <a href="juego-responsable.html">Juego Responsable (+18)</a>
+        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html">Términos y Condiciones</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <p class="footer-legal">
+        <strong>Aviso Legal y Juego Responsable (+18):</strong> El Viejo Timbero es un portal informativo e independiente de consulta recreativa. No somos una entidad oficial de lotería, no vendemos boletos ni recibimos apuestas online. Ante cualquier discrepancia, siempre tiene validez exclusiva el extracto publicado por cada lotería oficial.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/sorteos.js"></script>
+</body>
+</html>

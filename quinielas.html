@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quinielas de Hoy en Argentina (7 Provincias) y Tabla de los Sueños — El Viejo Timbero</title>
+  <meta name="description" content="Consultá los extractos de 20 posiciones de Quiniela Ciudad, Provincia de Buenos Aires (5 turnos), Santa Fe, Córdoba, Entre Ríos, Mendoza y Corrientes, más la Tabla de los Sueños del 00 al 99.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://elviejotimbero.netlify.app/quinielas.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="El Viejo Timbero">
+  <meta property="og:title" content="Quinielas de Hoy en Argentina (7 Provincias) y Tabla de los Sueños — El Viejo Timbero">
+  <meta property="og:description" content="Consultá los extractos de 20 posiciones de Quiniela Ciudad, Provincia de Buenos Aires (5 turnos), Santa Fe, Córdoba, Entre Ríos, Mendoza y Corrientes, más la Tabla de los Sueños del 00 al 99.">
+  <meta property="og:url" content="https://elviejotimbero.netlify.app/quinielas.html">
+  <link rel="stylesheet" href="css/styles.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Inicio de El Viejo Timbero">
+        <span class="brand-badge">TIMBERO</span>
+        <span>
+          <span class="brand-title"><span class="el-viejo">EL VIEJO</span> <span class="timbero">TIMBERO</span></span>
+          <span class="brand-sub">Resultados, control de boletas y guías oficiales</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+          <a class="nav-pill" href="index.html">Sorteos</a>
+          <a class="nav-pill active" href="quinielas.html">Quinielas</a>
+          <a class="nav-pill" href="controlar-boleta.html">Controlar Boleta</a>
+          <a class="nav-pill" href="simulador.html">Simulador</a>
+          <a class="nav-pill" href="mis-jugadas.html">Mis Jugadas</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">☀️</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor publicitario oculto por CSS hasta que AdSense entregue un anuncio activo -->
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <main class="container">
+    
+    <div id="prov-pills" class="subnav-pills"></div>
+    <div id="quiniela-root">
+      <div class="card">Cargando extractos de quinielas...</div>
+    </div>
+
+    <section class="editorial-section">
+      <h2>Horarios diarios y tabla orientativa de premios en Quiniela</h2>
+      <p>Tanto <a href="https://quiniela.loteriadelaciudad.gob.ar/" target="_blank" rel="noopener noreferrer">Quiniela de la Ciudad</a> como <a href="https://loteria.gba.gob.ar/" target="_blank" rel="noopener noreferrer">Quiniela de la Provincia de Buenos Aires</a> realizan cinco sorteos diarios de lunes a sábados: <strong>La Previa (10:15 hs)</strong>, <strong>La Primera / El Primero (12:00 hs)</strong>, <strong>Matutina (15:00 hs)</strong>, <strong>Vespertina (18:00 hs)</strong> y <strong>Nocturna (21:00 hs)</strong>.</p>
+      <table class="data-table" style="margin-top:14px;">
+        <thead>
+          <tr>
+            <th>Modalidad de apuesta</th>
+            <th>Cifras acertadas</th>
+            <th class="num">Multiplicador a la Cabeza (1º)</th>
+            <th class="num">Multiplicador a los 10</th>
+            <th class="num">Multiplicador a los 20</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Última cifra</td><td>1 dígito</td><td class="num"><strong>7 veces</strong></td><td class="num">0,7 veces</td><td class="num">0,35 veces</td></tr>
+          <tr><td>Dos cifras (Ambo)</td><td>2 dígitos</td><td class="num"><strong>70 veces</strong></td><td class="num">7 veces</td><td class="num">3,5 veces</td></tr>
+          <tr><td>Tres cifras (Terno)</td><td>3 dígitos</td><td class="num"><strong>600 veces</strong></td><td class="num">60 veces</td><td class="num">30 veces</td></tr>
+          <tr><td>Cuatro cifras (Cuaterno)</td><td>4 dígitos</td><td class="num"><strong>3.500 veces</strong></td><td class="num">350 veces</td><td class="num">175 veces</td></tr>
+        </tbody>
+      </table>
+      <p style="font-size:0.84rem;color:var(--muted);margin-top:10px;">Nota: Los topes de banca y apuestas mínimas/máximas pueden variar según el reglamento vigente de cada lotería provincial.</p>
+    </section>
+
+    <section class="editorial-section">
+      <h2>Significado tradicional de los Sueños (00 al 99)</h2>
+      <p>Buscá cualquier número de dos cifras o palabra clave para consultar la tabla clásica de los sueños utilizada históricamente en la quiniela rioplatense.</p>
+      <div style="max-width:420px;margin-top:12px;">
+        <input id="suenos-search" type="search" class="input-control" style="width:100%;" placeholder="Buscar por número (ej: 32) o sueño (ej: dinero, agua)...">
+      </div>
+      <div id="suenos-grid" class="dreams-grid"></div>
+    </section>
+    
+  </main>
+
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Enlaces legales e institucionales">
+        <a href="acerca.html">Acerca del Proyecto</a>
+        <a href="juego-responsable.html">Juego Responsable (+18)</a>
+        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html">Términos y Condiciones</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <p class="footer-legal">
+        <strong>Aviso Legal y Juego Responsable (+18):</strong> El Viejo Timbero es un portal informativo e independiente de consulta recreativa. No somos una entidad oficial de lotería, no vendemos boletos ni recibimos apuestas online. Ante cualquier discrepancia, siempre tiene validez exclusiva el extracto publicado por cada lotería oficial.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/quinielas.js"></script>
+</body>
+</html>

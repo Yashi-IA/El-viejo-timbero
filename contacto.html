@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacto — El Viejo Timbero</title>
+  <meta name="description" content="Comunicate con el equipo de El Viejo Timbero para reportar un error en un resultado, enviar sugerencias o realizar consultas sobre el sitio.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://elviejotimbero.netlify.app/contacto.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="El Viejo Timbero">
+  <meta property="og:title" content="Contacto — El Viejo Timbero">
+  <meta property="og:description" content="Comunicate con el equipo de El Viejo Timbero para reportar un error en un resultado, enviar sugerencias o realizar consultas sobre el sitio.">
+  <meta property="og:url" content="https://elviejotimbero.netlify.app/contacto.html">
+  <link rel="stylesheet" href="css/styles.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Inicio de El Viejo Timbero">
+        <span class="brand-badge">TIMBERO</span>
+        <span>
+          <span class="brand-title"><span class="el-viejo">EL VIEJO</span> <span class="timbero">TIMBERO</span></span>
+          <span class="brand-sub">Resultados, control de boletas y guías oficiales</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+          <a class="nav-pill" href="index.html">Sorteos</a>
+          <a class="nav-pill" href="quinielas.html">Quinielas</a>
+          <a class="nav-pill" href="controlar-boleta.html">Controlar Boleta</a>
+          <a class="nav-pill" href="simulador.html">Simulador</a>
+          <a class="nav-pill" href="mis-jugadas.html">Mis Jugadas</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">☀️</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor publicitario oculto por CSS hasta que AdSense entregue un anuncio activo -->
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <main class="container">
+    
+    <article class="prose-card">
+      <h1>Contacto</h1>
+      <p>¿Detectaste un número mal cargado, tenés una sugerencia para mejorar el controlador o querés comunicarte por consultas generales? Completá el formulario y te responderemos a la brevedad.</p>
+
+      <form name="contacto" method="POST" data-netlify="true" netlify-honeypot="bot-field" style="margin-top:20px;">
+        <input type="hidden" name="form-name" value="contacto">
+        <p style="display:none;"><label>No completar: <input name="bot-field"></label></p>
+
+        <div class="form-group">
+          <label for="c-nombre">Nombre</label>
+          <input id="c-nombre" name="nombre" type="text" class="input-control" required placeholder="Tu nombre">
+        </div>
+        <div class="form-group">
+          <label for="c-email">Correo electrónico</label>
+          <input id="c-email" name="email" type="email" class="input-control" required placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label for="c-motivo">Motivo de consulta</label>
+          <select id="c-motivo" name="motivo" class="select-control" style="width:100%;">
+            <option value="error_resultado">Reportar error en un resultado</option>
+            <option value="sugerencia">Sugerencia de mejora</option>
+            <option value="privacidad">Consulta sobre privacidad o políticas</option>
+            <option value="otro">Otro motivo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="c-mensaje">Mensaje</label>
+          <textarea id="c-mensaje" name="mensaje" rows="5" class="input-control" required placeholder="Contanos en qué podemos ayudarte..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Enviar mensaje</button>
+      </form>
+
+      <p style="font-size:0.84rem;color:var(--muted);margin-top:18px;">Recordá que El Viejo Timbero es un sitio informativo independiente y no atiende reclamos de pagos de premios ni consultas sobre tickets físicos; para esos trámites debés dirigirte a la agencia o lotería oficial correspondiente.</p>
+    </article>
+    
+  </main>
+
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Enlaces legales e institucionales">
+        <a href="acerca.html">Acerca del Proyecto</a>
+        <a href="juego-responsable.html">Juego Responsable (+18)</a>
+        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html">Términos y Condiciones</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <p class="footer-legal">
+        <strong>Aviso Legal y Juego Responsable (+18):</strong> El Viejo Timbero es un portal informativo e independiente de consulta recreativa. No somos una entidad oficial de lotería, no vendemos boletos ni recibimos apuestas online. Ante cualquier discrepancia, siempre tiene validez exclusiva el extracto publicado por cada lotería oficial.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module">import { initTheme } from "./js/common.js"; initTheme();</script>
+</body>
+</html>

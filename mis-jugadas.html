@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Jugadas Guardadas — El Viejo Timbero</title>
+  <meta name="description" content="Administrá tus boletas favoritas guardadas localmente en tu navegador y controlalas con un clic contra el último sorteo disponible.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://elviejotimbero.netlify.app/mis-jugadas.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="El Viejo Timbero">
+  <meta property="og:title" content="Mis Jugadas Guardadas — El Viejo Timbero">
+  <meta property="og:description" content="Administrá tus boletas favoritas guardadas localmente en tu navegador y controlalas con un clic contra el último sorteo disponible.">
+  <meta property="og:url" content="https://elviejotimbero.netlify.app/mis-jugadas.html">
+  <link rel="stylesheet" href="css/styles.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Inicio de El Viejo Timbero">
+        <span class="brand-badge">TIMBERO</span>
+        <span>
+          <span class="brand-title"><span class="el-viejo">EL VIEJO</span> <span class="timbero">TIMBERO</span></span>
+          <span class="brand-sub">Resultados, control de boletas y guías oficiales</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+          <a class="nav-pill" href="index.html">Sorteos</a>
+          <a class="nav-pill" href="quinielas.html">Quinielas</a>
+          <a class="nav-pill" href="controlar-boleta.html">Controlar Boleta</a>
+          <a class="nav-pill" href="simulador.html">Simulador</a>
+          <a class="nav-pill active" href="mis-jugadas.html">Mis Jugadas</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">☀️</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor publicitario oculto por CSS hasta que AdSense entregue un anuncio activo -->
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <main class="container">
+    
+    <section class="game-banner">
+      <div class="banner-left">
+        <h1>Mis Jugadas</h1>
+        <div class="banner-meta">
+          <span>Tus combinaciones guardadas en este navegador. Al tocar <strong>CONTROLAR</strong> se verifican automáticamente contra el último sorteo.</span>
+        </div>
+      </div>
+      <div class="banner-right">
+        <select id="mj-filter" class="select-control" aria-label="Filtrar jugadas por juego">
+          <option value="all">Todos los juegos</option>
+          <option value="quini6">Quini 6</option>
+          <option value="lotoPlus">Loto Plus</option>
+          <option value="telekino">Telekino</option>
+          <option value="brinco">Brinco</option>
+          <option value="loto5">Loto 5 Plus</option>
+          <option value="laPoceada">La Poceada</option>
+          <option value="quinielaPlus">Quiniela Plus</option>
+          <option value="quinielas">Quinielas</option>
+        </select>
+        <a class="btn btn-amber" href="simulador.html">+ Nueva jugada</a>
+      </div>
+    </section>
+
+    <div id="mj-list"></div>
+
+    <section class="editorial-section">
+      <h2>Privacidad de tus jugadas guardadas</h2>
+      <p>Todas las combinaciones que guardás en <strong>Mis Jugadas</strong> se almacenan exclusivamente en el almacenamiento local (<code>localStorage</code>) de tu dispositivo. No pedimos registro, no creamos cuentas de usuario ni enviamos tus números a ningún servidor externo. Si borrás los datos del navegador o cambiás de dispositivo, las jugadas guardadas se reiniciarán.</p>
+    </section>
+    
+  </main>
+
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Enlaces legales e institucionales">
+        <a href="acerca.html">Acerca del Proyecto</a>
+        <a href="juego-responsable.html">Juego Responsable (+18)</a>
+        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html">Términos y Condiciones</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <p class="footer-legal">
+        <strong>Aviso Legal y Juego Responsable (+18):</strong> El Viejo Timbero es un portal informativo e independiente de consulta recreativa. No somos una entidad oficial de lotería, no vendemos boletos ni recibimos apuestas online. Ante cualquier discrepancia, siempre tiene validez exclusiva el extracto publicado por cada lotería oficial.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/mis-jugadas.js"></script>
+</body>
+</html>

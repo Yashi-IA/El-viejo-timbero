@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Jugadas y Combinaciones — El Viejo Timbero</title>
+  <meta name="description" content="Armá combinaciones recreativas para Quini 6, Loto Plus, Brinco, Loto 5, La Poceada y Quiniela Plus usando candados de números fijos, exclusiones y filtros estadísticos.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://elviejotimbero.netlify.app/simulador.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="El Viejo Timbero">
+  <meta property="og:title" content="Simulador de Jugadas y Combinaciones — El Viejo Timbero">
+  <meta property="og:description" content="Armá combinaciones recreativas para Quini 6, Loto Plus, Brinco, Loto 5, La Poceada y Quiniela Plus usando candados de números fijos, exclusiones y filtros estadísticos.">
+  <meta property="og:url" content="https://elviejotimbero.netlify.app/simulador.html">
+  <link rel="stylesheet" href="css/styles.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Inicio de El Viejo Timbero">
+        <span class="brand-badge">TIMBERO</span>
+        <span>
+          <span class="brand-title"><span class="el-viejo">EL VIEJO</span> <span class="timbero">TIMBERO</span></span>
+          <span class="brand-sub">Resultados, control de boletas y guías oficiales</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+          <a class="nav-pill" href="index.html">Sorteos</a>
+          <a class="nav-pill" href="quinielas.html">Quinielas</a>
+          <a class="nav-pill" href="controlar-boleta.html">Controlar Boleta</a>
+          <a class="nav-pill active" href="simulador.html">Simulador</a>
+          <a class="nav-pill" href="mis-jugadas.html">Mis Jugadas</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">☀️</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor publicitario oculto por CSS hasta que AdSense entregue un anuncio activo -->
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <main class="container">
+    
+    <section class="card">
+      <h1 style="margin-top:0;color:var(--amber);">Simulador de Boletas</h1>
+      <p style="color:var(--muted);margin-top:0;">Herramienta recreativa para armar combinaciones personalizadas: bloqueá tus números fijos con el candado, excluí los que no quieras usar y aplicá filtros de paridad, rango o suma total.</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:16px;">
+        <div>
+          <label for="sim-juego" style="display:block;font-size:0.84rem;font-weight:600;margin-bottom:6px;">Juego de destino</label>
+          <select id="sim-juego" class="select-control" style="width:100%;">
+            <option value="quini6">Quini 6 (6 números / 00-45)</option>
+            <option value="lotoPlus">Loto Plus (6 números / 00-45)</option>
+            <option value="brinco">Brinco (6 números / 00-39)</option>
+            <option value="loto5">Loto 5 Plus (5 números / 00-36)</option>
+            <option value="laPoceada">La Poceada (8 números / 00-99)</option>
+            <option value="quinielaPlus">Quiniela Plus (8 números / 00-99)</option>
+          </select>
+        </div>
+        <div>
+          <label for="sim-nombre" style="display:block;font-size:0.84rem;font-weight:600;margin-bottom:6px;">Nombre de tu estrategia</label>
+          <input id="sim-nombre" type="text" class="input-control" style="width:100%;" placeholder="Ej: Mi jugada equilibrada">
+        </div>
+        <div>
+          <label for="sim-excluir" style="display:block;font-size:0.84rem;font-weight:600;margin-bottom:6px;">Excluir números (separados por coma)</label>
+          <input id="sim-excluir" type="text" class="input-control" style="width:100%;" placeholder="Ej: 0, 13, 45">
+        </div>
+      </div>
+
+      <div id="sim-slots" class="num-inputs-row"></div>
+      <div id="sim-stats" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;"></div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;padding:14px;background:var(--surface-2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:16px;">
+        <div>
+          <label for="sim-paridad" style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;">Pares / Impares</label>
+          <select id="sim-paridad" class="select-control" style="width:100%;">
+            <option value="any">Indistinto</option>
+            <option value="equilibrado">Equilibrado (mitad y mitad)</option>
+            <option value="mas_pares">Mayoría pares</option>
+            <option value="mas_impares">Mayoría impares</option>
+          </select>
+        </div>
+        <div>
+          <label for="sim-rango" style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;">Altos / Bajos</label>
+          <select id="sim-rango" class="select-control" style="width:100%;">
+            <option value="any">Indistinto</option>
+            <option value="equilibrado">Equilibrado</option>
+            <option value="altos">Mayoría altos</option>
+            <option value="bajos">Mayoría bajos</option>
+          </select>
+        </div>
+        <div>
+          <label for="sim-suma" style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:6px;">Suma objetivo: <strong id="sim-suma-val">Sin límite</strong></label>
+          <input id="sim-suma" type="range" min="0" max="450" step="10" value="0" style="width:100%;">
+        </div>
+      </div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <button id="btn-sim-filtros" type="button" class="btn btn-primary">Armar con filtros</button>
+        <button id="btn-sim-azar" type="button" class="btn btn-outline">Generar al azar</button>
+        <button id="btn-sim-guardar" type="button" class="btn btn-amber">Guardar en Mis Jugadas</button>
+      </div>
+    </section>
+
+    <section class="editorial-section">
+      <h2>¿Cómo funciona la probabilidad en los juegos poceados?</h2>
+      <div class="editorial-grid">
+        <div>
+          <h3>Independencia de cada sorteo</h3>
+          <p>En todos los sorteos oficiales regulados, cada extracción es un evento matemáticamente independiente. Esto significa que las bolillas no tienen "memoria": una combinación como <code>01-02-03-04-05-06</code> posee exactamente la misma probabilidad teórica de salir que cualquier otra combinación de seis números.</p>
+        </div>
+        <div>
+          <h3>Uso recreativo del simulador</h3>
+          <p>Los filtros de paridad, rangos altos/bajos y suma total permiten explorar patrones de distribución habituales con fines lúdicos y educativos, pero <strong>no aumentan las probabilidades reales de ganar ni garantizan aciertos</strong>. Jugá siempre de forma moderada y únicamente si sos mayor de 18 años.</p>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Enlaces legales e institucionales">
+        <a href="acerca.html">Acerca del Proyecto</a>
+        <a href="juego-responsable.html">Juego Responsable (+18)</a>
+        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html">Términos y Condiciones</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <p class="footer-legal">
+        <strong>Aviso Legal y Juego Responsable (+18):</strong> El Viejo Timbero es un portal informativo e independiente de consulta recreativa. No somos una entidad oficial de lotería, no vendemos boletos ni recibimos apuestas online. Ante cualquier discrepancia, siempre tiene validez exclusiva el extracto publicado por cada lotería oficial.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/simulador.js"></script>
+</body>
+</html>

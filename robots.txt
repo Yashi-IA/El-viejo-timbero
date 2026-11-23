@@ -1,0 +1,16 @@
+# robots.txt para El Viejo Timbero
+# Habilita el rastreo de Google Search y de los bots de Google AdSense
+
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Google-Display-Ads-Bot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: *
+Allow: /
+
+Sitemap: https://elviejotimbero.netlify.app/sitemap.xml

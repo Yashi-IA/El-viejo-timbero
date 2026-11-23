@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es-AR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controlar Boleta Online (Quini 6, Loto, Telekino, Brinco, Poceada y Quinielas) — El Viejo Timbero</title>
+  <meta name="description" content="Verificá tus números contra los últimos sorteos cargados de Quini 6, Loto Plus, Telekino, Brinco, Loto 5 Plus, La Poceada, Quiniela Plus y Quinielas provinciales.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://elviejotimbero.netlify.app/controlar-boleta.html">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_AR">
+  <meta property="og:site_name" content="El Viejo Timbero">
+  <meta property="og:title" content="Controlar Boleta Online (Quini 6, Loto, Telekino, Brinco, Poceada y Quinielas) — El Viejo Timbero">
+  <meta property="og:description" content="Verificá tus números contra los últimos sorteos cargados de Quini 6, Loto Plus, Telekino, Brinco, Loto 5 Plus, La Poceada, Quiniela Plus y Quinielas provinciales.">
+  <meta property="og:url" content="https://elviejotimbero.netlify.app/controlar-boleta.html">
+  <link rel="stylesheet" href="css/styles.css">
+  
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="index.html" aria-label="Inicio de El Viejo Timbero">
+        <span class="brand-badge">TIMBERO</span>
+        <span>
+          <span class="brand-title"><span class="el-viejo">EL VIEJO</span> <span class="timbero">TIMBERO</span></span>
+          <span class="brand-sub">Resultados, control de boletas y guías oficiales</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+          <a class="nav-pill" href="index.html">Sorteos</a>
+          <a class="nav-pill" href="quinielas.html">Quinielas</a>
+          <a class="nav-pill active" href="controlar-boleta.html">Controlar Boleta</a>
+          <a class="nav-pill" href="simulador.html">Simulador</a>
+          <a class="nav-pill" href="mis-jugadas.html">Mis Jugadas</a>
+        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Cambiar tema">☀️</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Contenedor publicitario oculto por CSS hasta que AdSense entregue un anuncio activo -->
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <main class="container">
+    
+    <section class="card">
+      <h1 style="margin-top:0;color:var(--amber);">Controlar Boleta</h1>
+      <p style="color:var(--muted);margin-top:0;">Elegí el juego, ingresá los números de tu ticket y comprobá al instante cuántos aciertos tuviste contra el último sorteo publicado.</p>
+
+      <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;">
+        <div>
+          <label for="ctrl-juego" style="display:block;font-size:0.84rem;font-weight:600;margin-bottom:6px;">Juego</label>
+          <select id="ctrl-juego" class="select-control">
+            <option value="quini6">Quini 6</option>
+            <option value="lotoPlus">Loto Plus</option>
+            <option value="telekino">Telekino</option>
+            <option value="brinco">Brinco</option>
+            <option value="loto5">Loto 5 Plus</option>
+            <option value="laPoceada">La Poceada de la Ciudad</option>
+            <option value="quinielaPlus">Quiniela Plus</option>
+            <option value="quinielas">Quinielas (1 a 4 cifras)</option>
+          </select>
+        </div>
+        <div id="ctrl-prov-wrap" style="display:none;">
+          <label for="ctrl-prov" style="display:block;font-size:0.84rem;font-weight:600;margin-bottom:6px;">Jurisdicción</label>
+          <select id="ctrl-prov" class="select-control">
+            <option value="ciudad">Ciudad (CABA)</option>
+            <option value="provincia">Provincia de Buenos Aires</option>
+            <option value="santafe">Santa Fe</option>
+            <option value="cordoba">Córdoba</option>
+            <option value="entrerios">Entre Ríos</option>
+            <option value="mendoza">Mendoza</option>
+            <option value="corrientes">Corrientes</option>
+          </select>
+        </div>
+      </div>
+
+      <p id="ctrl-hint" style="font-size:0.86rem;color:var(--teal);margin:14px 0 6px;"></p>
+      <div id="ctrl-inputs" class="num-inputs-row"></div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;">
+        <button id="btn-controlar" type="button" class="btn btn-primary">Controlar mi Boleta</button>
+        <button id="btn-guardar-ctrl" type="button" class="btn btn-amber">Guardar en Mis Jugadas</button>
+        <button id="btn-limpiar" type="button" class="btn btn-outline">Limpiar casilleros</button>
+      </div>
+
+      <div id="ctrl-result"></div>
+    </section>
+
+    <section class="editorial-section">
+      <h2>Guía práctica para verificar y cobrar premios en Argentina</h2>
+      <div class="editorial-grid">
+        <div>
+          <h3>Cómo revisar correctamente tu ticket</h3>
+          <p>Verificá siempre tres datos impresos en el comprobante físico emitido por la agencia oficial: el <strong>número de sorteo</strong>, la <strong>fecha exacta</strong> y las <strong>modalidades habilitadas</strong> (por ejemplo, en Quini 6 la Revancha y el Siempre Sale requieren haber abonado el adicional correspondiente).</p>
+          <h3>Plazos de prescripción</h3>
+          <p>Cada lotería establece un plazo límite para el cobro de premios —generalmente de <strong>10 a 15 días corridos</strong> posteriores a la fecha del sorteo según el juego y la jurisdicción—. Pasado ese vencimiento, el ticket caduca sin excepción.</p>
+        </div>
+        <div>
+          <h3>Impuesto a los premios (Ley 20.630)</h3>
+          <p>En Argentina, los premios de juegos de sorteo que superan el mínimo no imponible vigente están alcanzados por la retención nacional de la Ley 20.630 (aplicada sobre el 90% del premio bruto con una alícuota del 31%, equivalente a un <strong>27,9% efectivo</strong> sobre el total). Las agencias y entes oficiales realizan esa deducción automáticamente al momento del pago.</p>
+          <h3>Conservación del comprobante</h3>
+          <p>Guardá la boleta lejos del calor directo y la luz solar para evitar que el papel térmico se borre. Presentá el ticket original sin enmiendas ni roturas en el código de barras.</p>
+        </div>
+      </div>
+    </section>
+    
+  </main>
+
+  <div class="container">
+    <div class="ad-slot" aria-label="Publicidad"></div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container">
+      <nav class="footer-links" aria-label="Enlaces legales e institucionales">
+        <a href="acerca.html">Acerca del Proyecto</a>
+        <a href="juego-responsable.html">Juego Responsable (+18)</a>
+        <a href="privacidad.html">Política de Privacidad</a>
+        <a href="terminos.html">Términos y Condiciones</a>
+        <a href="contacto.html">Contacto</a>
+      </nav>
+      <p class="footer-legal">
+        <strong>Aviso Legal y Juego Responsable (+18):</strong> El Viejo Timbero es un portal informativo e independiente de consulta recreativa. No somos una entidad oficial de lotería, no vendemos boletos ni recibimos apuestas online. Ante cualquier discrepancia, siempre tiene validez exclusiva el extracto publicado por cada lotería oficial.
+      </p>
+    </div>
+  </footer>
+
+  <script type="module" src="js/controlador.js"></script>
+</body>
+</html>
