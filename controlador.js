@@ -1,6 +1,6 @@
-import { initTheme, fetchResultados, formatFechaAR, pad2 } from './common.js';
-import { saveJugada } from './storage.js';
-import { showToast } from './common.js';
+import { initTheme, fetchResultados, formatFechaAR, pad2 } from '/common.js';
+import { saveJugada } from '/storage.js';
+import { showToast } from '/common.js';
 
 initTheme();
 

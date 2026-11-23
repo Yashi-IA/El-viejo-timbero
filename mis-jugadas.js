@@ -1,5 +1,5 @@
-import { initTheme, JUEGO_LABELS, pad2, showToast } from './common.js';
-import { getJugadas, deleteJugada, buildControlarUrl } from './storage.js';
+import { initTheme, JUEGO_LABELS, pad2, showToast } from '/common.js';
+import { getJugadas, deleteJugada, buildControlarUrl } from '/storage.js';
 
 initTheme();
 

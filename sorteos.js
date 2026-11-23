@@ -1,4 +1,4 @@
-import { initTheme, fetchResultados, formatFechaAR, pad2 } from './common.js';
+import { initTheme, fetchResultados, formatFechaAR, pad2 } from '/common.js';
 
 initTheme();
 
@@ -18,7 +18,7 @@ async function boot() {
     renderGame();
   } catch (err) {
     const root = document.getElementById('sorteos-root');
-    if (root) root.innerHTML = `<div class="card">No se pudieron cargar los resultados. Verificá que <code>data/resultados.json</code> esté disponible.</div>`;
+    if (root) root.innerHTML = `<div class="card">No se pudieron cargar los resultados. Verificá que <code>resultados.json</code> esté disponible.</div>`;
   }
 }
 

@@ -1,5 +1,5 @@
-import { initTheme, pad2, showToast } from './common.js';
-import { saveJugada } from './storage.js';
+import { initTheme, pad2, showToast } from '/common.js';
+import { saveJugada } from '/storage.js';
 
 initTheme();
 

@@ -1,5 +1,5 @@
-import { initTheme, fetchResultados, formatFechaAR } from './common.js';
-import { SUENOS, SUENOS_MAP } from './suenos-data.js';
+import { initTheme, fetchResultados, formatFechaAR } from '/common.js';
+import { SUENOS, SUENOS_MAP } from '/suenos-data.js';
 
 initTheme();
 
