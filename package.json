@@ -1,0 +1,13 @@
+{
+  "name": "el-viejo-timbero-updater",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Actualizador automático de resultados reales para El Viejo Timbero vía GitHub Actions",
+  "scripts": {
+    "actualizar": "node scripts/actualizar-sorteos.mjs"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
