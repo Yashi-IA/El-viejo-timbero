@@ -11,7 +11,7 @@ function render() {
   if (list.length === 0) {
     root.innerHTML = `
       <div class="card">
-        <p style="margin:0;color:var(--muted);">Todavía no tenés jugadas guardadas para este filtro. Podés crear una desde el <a href="simulador.html">Simulador</a> o guardar tu boleta en <a href="controlar-boleta.html">Controlar Boleta</a>.</p>
+        <p style="margin:0;color:var(--muted);">Todavía no tenés jugadas guardadas para este filtro. Podés crear una desde el <a href="/simulador.html">Simulador</a> o guardar tu boleta en <a href="/controlar-boleta.html">Controlar Boleta</a>.</p>
       </div>
     `;
     return;

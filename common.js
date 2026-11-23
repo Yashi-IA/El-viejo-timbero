@@ -28,7 +28,7 @@ function applyTheme(theme) {
 let _cacheResultados = null;
 export async function fetchResultados() {
   if (_cacheResultados) return _cacheResultados;
-  const res = await fetch(`data/resultados.json?t=${Date.now()}`, { cache: 'no-store' });
+  const res = await fetch(`/data/resultados.json?t=${Date.now()}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('No se pudo cargar data/resultados.json');
   _cacheResultados = await res.json();
   return _cacheResultados;

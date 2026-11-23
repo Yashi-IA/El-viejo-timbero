@@ -58,5 +58,5 @@ export function buildControlarUrl(jugada) {
     nombre: jugada.nombre || '',
     auto: '1'
   });
-  return `controlar-boleta.html?${params.toString()}`;
+  return `/controlar-boleta.html?${params.toString()}`;
 }

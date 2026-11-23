@@ -28,7 +28,7 @@ function renderPills() {
   wrap.innerHTML = ORDER.map(key => {
     const g = data.poceados[key];
     return `<button class="game-pill ${key === currentGame ? 'active' : ''}" data-game="${key}">${g.nombre}</button>`;
-  }).join('') + `<a class="game-pill" href="quinielas.html">Quinielas (7 provincias) →</a>`;
+  }).join('') + `<a class="game-pill" href="/quinielas.html">Quinielas (7 provincias) →</a>`;
 
   wrap.querySelectorAll('button[data-game]').forEach(btn => {
     btn.addEventListener('click', () => {
