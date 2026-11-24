@@ -1,5 +1,5 @@
 {
-  "actualizadoEl": "2026-11-23T22:49:42-03:00",
+  "actualizadoEl": "2026-11-24T20:08:43-03:00",
   "poceados": {
     "quini6": {
       "nombre": "Quini 6",
@@ -1472,6 +1472,59 @@
               "2083",
               "5376"
             ]
+          }
+        },
+        "2026-11-24": {
+          "previa": {
+            "nombre": "La Previa",
+            "hora": "10:15",
+            "sorteo": 0,
+            "extracto": []
+          },
+          "primero": {
+            "nombre": "El Primero",
+            "hora": "12:00",
+            "sorteo": 0,
+            "extracto": []
+          },
+          "matutina": {
+            "nombre": "Matutina",
+            "hora": "15:00",
+            "sorteo": 0,
+            "extracto": []
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 0,
+            "extracto": [
+              "1417",
+              "0388",
+              "7582",
+              "0600",
+              "3991",
+              "2809",
+              "5634",
+              "9545",
+              "2333",
+              "2983",
+              "6480",
+              "9417",
+              "1111",
+              "1674",
+              "1998",
+              "8807",
+              "3759",
+              "9628",
+              "8644",
+              "9099"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": []
           }
         }
       }
