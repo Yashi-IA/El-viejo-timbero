@@ -1,0 +1,47 @@
+name: Actualizar Resultados Reales (El Viejo Timbero)
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Horarios en UTC (Argentina es UTC-3)
+    - cron: '30 13 * * 1-6'   # 10:30 AR - Post La Previa
+    - cron: '20 15 * * 1-6'   # 12:20 AR - Post La Primera / El Primero
+    - cron: '25 18 * * 0-6'   # 15:25 AR - Post Matutina + Telekino (dom)
+    - cron: '25 21 * * 1-6'   # 18:25 AR - Post Vespertina
+    - cron: '35 0 * * 0-6'    # 21:35 AR - Post Nocturna, Poceada, Quiniela Plus, Brinco, Quini 6
+    - cron: '35 1 * * 0,4'    # 22:35 AR (mié y sáb) - Post Loto Plus y Loto 5
+
+permissions:
+  contents: write
+
+jobs:
+  actualizar-datos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias del scraper
+        run: npm install --no-audit --no-fund
+
+      - name: Consultar fuentes oficiales y actualizar resultados.json
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: npm run actualizar
+
+      - name: Guardar y publicar cambios si hubo sorteos nuevos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet resultados.json sitemap.xml; then
+            echo "Sin cambios nuevos en los sorteos."
+          else
+            git add resultados.json sitemap.xml
+            git commit -m "chore(datos): actualizar resultados oficiales $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
