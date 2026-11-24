@@ -1,4 +1,5 @@
 const THEME_KEY = 'evt_theme';
+const RAW_GITHUB_URL = 'https://raw.githubusercontent.com/Yashi-IA/El-viejo-timbero/main/resultados.json';
 
 export function initTheme() {
   const saved = localStorage.getItem(THEME_KEY) || 'dark';
@@ -28,9 +29,23 @@ function applyTheme(theme) {
 let _cacheResultados = null;
 export async function fetchResultados() {
   if (_cacheResultados) return _cacheResultados;
-  const res = await fetch(`/resultados.json?t=${Date.now()}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('No se pudo cargar resultados.json');
-  _cacheResultados = await res.json();
+  const bust = `t=${Date.now()}`;
+
+  // 1) Lee primero desde GitHub Raw (se actualiza solo sin gastar deploys en Netlify)
+  try {
+    const resRaw = await fetch(`${RAW_GITHUB_URL}?${bust}`, { cache: 'no-store' });
+    if (resRaw.ok) {
+      _cacheResultados = await resRaw.json();
+      return _cacheResultados;
+    }
+  } catch (_) {
+    // Si falla GitHub Raw, usa la copia local en Netlify como respaldo
+  }
+
+  // 2) Respaldo local en Netlify
+  const resLocal = await fetch(`/resultados.json?${bust}`, { cache: 'no-store' });
+  if (!resLocal.ok) throw new Error('No se pudo cargar resultados.json');
+  _cacheResultados = await resLocal.json();
   return _cacheResultados;
 }
 
