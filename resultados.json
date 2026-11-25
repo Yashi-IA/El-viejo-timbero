@@ -1,5 +1,5 @@
 {
-  "actualizadoEl": "2026-11-24T20:54:12-03:00",
+  "actualizadoEl": "2026-11-24T23:38:45-03:00",
   "poceados": {
     "quini6": {
       "nombre": "Quini 6",
@@ -628,8 +628,8 @@
       ],
       "cantidadBolillas": 8,
       "ultimo": {
-        "sorteo": 97792,
-        "fecha": "2026-11-23",
+        "sorteo": 97802,
+        "fecha": "2026-11-24",
         "modalidades": [
           {
             "nombre": "Extracto de 20 números (00 al 99)",
@@ -641,16 +641,16 @@
               7,
               6,
               5,
-              23,
+              24,
               11,
               21,
               80,
               50,
               10,
-              24,
               3,
               9,
               25,
+              23,
               26,
               27,
               28
@@ -667,6 +667,45 @@
         ]
       },
       "historico": [
+        {
+          "sorteo": 97792,
+          "fecha": "2026-11-23",
+          "modalidades": [
+            {
+              "nombre": "Extracto de 20 números (00 al 99)",
+              "bolillas": [
+                0,
+                1,
+                8,
+                2,
+                7,
+                6,
+                5,
+                23,
+                11,
+                21,
+                80,
+                50,
+                10,
+                24,
+                3,
+                9,
+                25,
+                26,
+                27,
+                28
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Ver extracto",
+                  "pozo": "$100000000",
+                  "premioIndividual": "Ver extracto"
+                }
+              ]
+            }
+          ]
+        },
         {
           "sorteo": 9781,
           "fecha": "2026-11-21",
@@ -1524,7 +1563,28 @@
             "nombre": "Nocturna",
             "hora": "21:00",
             "sorteo": 0,
-            "extracto": []
+            "extracto": [
+              "1417",
+              "0388",
+              "7582",
+              "0600",
+              "3991",
+              "2809",
+              "5634",
+              "9545",
+              "2333",
+              "2983",
+              "6480",
+              "9417",
+              "1111",
+              "1674",
+              "1998",
+              "8807",
+              "3759",
+              "9628",
+              "8644",
+              "9099"
+            ]
           }
         }
       }
