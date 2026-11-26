@@ -6,11 +6,12 @@ on:
     # Horarios en UTC (Argentina es UTC-3)
     - cron: '30 13 * * 1-6'   # 10:30 AR - La Previa
     - cron: '20 15 * * 1-6'   # 12:20 AR - La Primera / El Primero
-    - cron: '25 18 * * 0-6'   # 15:25 AR - Matutina + Telekino (dom)
+    - cron: '25 18 * * *'     # 15:25 AR - Matutina + Telekino (dom)
     - cron: '45 20 * * 0'     # 17:45 AR - Telekino escrutinio (dom)
     - cron: '25 21 * * 1-6'   # 18:25 AR - Vespertina
-    - cron: '30 0 * * 0-6'    # 21:30 AR - Nocturna, Poceada, Quiniela Plus, Quini 6, Brinco
-    - cron: '15 1 * * 0-6'    # 22:15 AR - Escrutinios nocturnos, Quini 6, Brinco, Loto Plus
+    - cron: '45 21 * * 1-6'   # 18:45 AR - Vespertina respaldo
+    - cron: '30 0 * * *'      # 21:30 AR - Nocturna, Poceada, Quiniela Plus, Quini 6, Brinco
+    - cron: '15 1 * * *'      # 22:15 AR - Escrutinios nocturnos, Quini 6, Brinco, Loto Plus
     - cron: '55 1 * * 0,4'    # 22:55 AR (mié y sáb) - Loto Plus escrutinio + Loto 5 Plus (sáb)
     - cron: '30 2 * * 0,4'    # 23:30 AR (mié y sáb) - Escrutinio tardío Loto Plus / Loto 5 Plus
 
@@ -26,10 +27,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Configurar Node.js 20
+      - name: Configurar Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Recuperar último resultados.json desde rama datos (si existe)
         run: |
@@ -50,71 +51,7 @@ jobs:
           fi
 
       - name: Consultar fuentes oficiales y actualizar resultados.json
-        run: |
-          node -e '
-            const urls = [
-              "https://www.lanacion.com.ar/loterias/loto/",
-              "https://tn.com.ar/quinielas-loterias/",
-              "https://tn.com.ar/quinielas-loterias/mendoza/",
-              "https://tn.com.ar/quinielas-loterias/entre-rios/",
-              "https://tn.com.ar/quinielas-loterias/corrientes/",
-              "https://eldoce.tv/quinielas-loterias/entre-rios/",
-              "https://eldoce.tv/quinielas-loterias/mendoza/",
-              "https://eldoce.tv/quinielas-loterias/corrientes/",
-              "https://www.loteriasmundiales.com.ar/Quinielas/mendoza",
-              "https://www.loteriasmundiales.com.ar/Quinielas/entre-rios",
-              "https://www.loteriasmundiales.com.ar/Quinielas/correntina",
-              "https://numerosconsuerte.com.ar/quiniela/mendoza/quiniela-de-mendoza-de-hoy/",
-              "https://numerosconsuerte.com.ar/quiniela/entre-rios/quiniela-de-entre-rios-de-hoy/",
-              "https://numerosconsuerte.com.ar/quiniela/corrientes/quiniela-correntina-de-hoy/",
-              "https://quinieleando.com.ar/quinielas/corrientes/resultados-de-hoy",
-              "https://www.ruta1000.com.ar/index2008.php?FechaAlMinuto=2026_11_26"
-            ];
-            const H = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" };
-            (async () => {
-              for (const u of urls) {
-                try {
-                  const ac = new AbortController();
-                  const tm = setTimeout(() => ac.abort(), 8000);
-                  const r = await fetch(u, { signal: ac.signal, headers: H });
-                  clearTimeout(tm);
-                  const t = await r.text();
-                  const has26 = /26\/11\/2026|26 de noviembre/i.test(t);
-                  const hasFusion = t.includes("Fusion.globalContent");
-                  console.log("PROBE", r.status, "len=" + t.length, "has26=" + has26, "fusion=" + hasFusion, u);
-                } catch (e) {
-                  console.log("PROBE_ERR", u, e.message);
-                }
-              }
-              // Inspect Fusion.globalContent on La Nacion (quiniela-nacional + quini-6 + loto + telekino + poceada + plus)
-              for (const u of [
-                "https://www.lanacion.com.ar/loterias/quiniela-nacional/",
-                "https://www.lanacion.com.ar/loterias/quini-6/",
-                "https://www.lanacion.com.ar/loterias/loto/",
-                "https://www.lanacion.com.ar/loterias/quiniela-poceada/",
-                "https://www.lanacion.com.ar/loterias/quiniela-plus/"
-              ]) {
-                const t = await (await fetch(u, { headers: H })).text();
-                const m = t.match(/Fusion\.globalContent\s*=\s*(\{[\s\S]*?\});\s*Fusion\.globalContentConfig/);
-                console.log("=== LN_JSON", u, "found=" + !!m);
-                if (m) {
-                  const j = JSON.parse(m[1]);
-                  console.log("KEYS:", Object.keys(j));
-                  const sample = JSON.stringify(j).slice(0, 1400);
-                  console.log("SAMPLE:", sample);
-                }
-              }
-            })();
-          ' 2>&1 | tee /tmp/scraper.log
-          TMP_DBG=$(mktemp -d)
-          git worktree add --orphan -b debug-log "$TMP_DBG"
-          cp /tmp/scraper.log "$TMP_DBG/scraper.log"
-          git -C "$TMP_DBG" config user.name "github-actions[bot]"
-          git -C "$TMP_DBG" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git -C "$TMP_DBG" add scraper.log
-          git -C "$TMP_DBG" commit -m "debug: probe2"
-          git -C "$TMP_DBG" push --force origin debug-log
-          git worktree remove --force "$TMP_DBG"
+        run: npm run actualizar
 
       - name: Publicar cambios únicamente en rama datos (0 deploys en Netlify)
         run: |
