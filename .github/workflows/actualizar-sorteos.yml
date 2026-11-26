@@ -53,51 +53,55 @@ jobs:
         run: |
           node -e '
             const urls = [
-              "https://www.lanacion.com.ar/loterias/quini-6/",
-              "https://www.lanacion.com.ar/loterias/loto-plus/",
-              "https://www.lanacion.com.ar/loterias/telekino/",
-              "https://www.lanacion.com.ar/loterias/brinco/",
-              "https://www.lanacion.com.ar/loterias/loto-5/",
-              "https://www.lanacion.com.ar/loterias/quiniela-poceada/",
-              "https://www.lanacion.com.ar/loterias/quiniela-plus/",
-              "https://www.lanacion.com.ar/loterias/quiniela-nacional/",
-              "https://www.lanacion.com.ar/loterias/quiniela-provincia/",
-              "https://www.lanacion.com.ar/loterias/quiniela-santa-fe/",
-              "https://www.lanacion.com.ar/loterias/quiniela-cordoba/",
-              "https://www.lanacion.com.ar/loterias/quiniela-entre-rios/",
-              "https://www.lanacion.com.ar/loterias/quiniela-mendoza/",
-              "https://www.lanacion.com.ar/loterias/quiniela-corrientes/",
-              "https://www.iafas.gov.ar/loteria-er/",
-              "https://www.clarin.com/loterias-y-quinielas/",
-              "https://www.cronista.com/loterias/",
-              "https://www.dequinielas.com/quiniela-entre-rios/",
-              "https://www.dequinielas.com/quiniela-mendoza/",
-              "https://www.dequinielas.com/quiniela-corrientes/",
-              "https://www.ruta1000.com.ar/",
-              "https://www.quinielas.com.ar/",
-              "https://www.loteriadecorrientes.gov.ar/",
-              "https://www.vivielazar.com.ar/quiniela-mendoza",
-              "https://www.vivielazar.com.ar/quiniela-entre-rios",
-              "https://www.vivielazar.com.ar/quiniela-corrientes",
-              "https://www.resultadosquiniela.com.ar/",
-              "https://www.quinielasargentinas.com.ar/"
+              "https://www.lanacion.com.ar/loterias/loto/",
+              "https://tn.com.ar/quinielas-loterias/",
+              "https://tn.com.ar/quinielas-loterias/mendoza/",
+              "https://tn.com.ar/quinielas-loterias/entre-rios/",
+              "https://tn.com.ar/quinielas-loterias/corrientes/",
+              "https://eldoce.tv/quinielas-loterias/entre-rios/",
+              "https://eldoce.tv/quinielas-loterias/mendoza/",
+              "https://eldoce.tv/quinielas-loterias/corrientes/",
+              "https://www.loteriasmundiales.com.ar/Quinielas/mendoza",
+              "https://www.loteriasmundiales.com.ar/Quinielas/entre-rios",
+              "https://www.loteriasmundiales.com.ar/Quinielas/correntina",
+              "https://numerosconsuerte.com.ar/quiniela/mendoza/quiniela-de-mendoza-de-hoy/",
+              "https://numerosconsuerte.com.ar/quiniela/entre-rios/quiniela-de-entre-rios-de-hoy/",
+              "https://numerosconsuerte.com.ar/quiniela/corrientes/quiniela-correntina-de-hoy/",
+              "https://quinieleando.com.ar/quinielas/corrientes/resultados-de-hoy",
+              "https://www.ruta1000.com.ar/index2008.php?FechaAlMinuto=2026_11_26"
             ];
+            const H = { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" };
             (async () => {
               for (const u of urls) {
                 try {
                   const ac = new AbortController();
                   const tm = setTimeout(() => ac.abort(), 8000);
-                  const r = await fetch(u, {
-                    signal: ac.signal,
-                    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" }
-                  });
+                  const r = await fetch(u, { signal: ac.signal, headers: H });
                   clearTimeout(tm);
                   const t = await r.text();
                   const has26 = /26\/11\/2026|26 de noviembre/i.test(t);
-                  const hasNextData = t.includes("__NEXT_DATA__") || t.includes("Fusion.globalContent");
-                  console.log("PROBE", r.status, "len=" + t.length, "has26=" + has26, "json=" + hasNextData, u);
+                  const hasFusion = t.includes("Fusion.globalContent");
+                  console.log("PROBE", r.status, "len=" + t.length, "has26=" + has26, "fusion=" + hasFusion, u);
                 } catch (e) {
                   console.log("PROBE_ERR", u, e.message);
+                }
+              }
+              // Inspect Fusion.globalContent on La Nacion (quiniela-nacional + quini-6 + loto + telekino + poceada + plus)
+              for (const u of [
+                "https://www.lanacion.com.ar/loterias/quiniela-nacional/",
+                "https://www.lanacion.com.ar/loterias/quini-6/",
+                "https://www.lanacion.com.ar/loterias/loto/",
+                "https://www.lanacion.com.ar/loterias/quiniela-poceada/",
+                "https://www.lanacion.com.ar/loterias/quiniela-plus/"
+              ]) {
+                const t = await (await fetch(u, { headers: H })).text();
+                const m = t.match(/Fusion\.globalContent\s*=\s*(\{[\s\S]*?\});\s*Fusion\.globalContentConfig/);
+                console.log("=== LN_JSON", u, "found=" + !!m);
+                if (m) {
+                  const j = JSON.parse(m[1]);
+                  console.log("KEYS:", Object.keys(j));
+                  const sample = JSON.stringify(j).slice(0, 1400);
+                  console.log("SAMPLE:", sample);
                 }
               }
             })();
@@ -108,7 +112,7 @@ jobs:
           git -C "$TMP_DBG" config user.name "github-actions[bot]"
           git -C "$TMP_DBG" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git -C "$TMP_DBG" add scraper.log
-          git -C "$TMP_DBG" commit -m "debug: probe sources"
+          git -C "$TMP_DBG" commit -m "debug: probe2"
           git -C "$TMP_DBG" push --force origin debug-log
           git worktree remove --force "$TMP_DBG"
 
