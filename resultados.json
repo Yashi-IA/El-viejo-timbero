@@ -1,5 +1,5 @@
 {
-  "actualizadoEl": "2026-11-25T20:38:24-03:00",
+  "actualizadoEl": "2026-11-25T22:52:11-03:00",
   "poceados": {
     "quini6": {
       "nombre": "Quini 6",
@@ -177,8 +177,8 @@
       ],
       "cantidadBolillas": 6,
       "ultimo": {
-        "sorteo": 3937,
-        "fecha": "2026-11-21",
+        "sorteo": 3938,
+        "fecha": "2026-11-25",
         "modalidades": [
           {
             "nombre": "Tradicional",
@@ -628,8 +628,8 @@
       ],
       "cantidadBolillas": 8,
       "ultimo": {
-        "sorteo": 97802,
-        "fecha": "2026-11-24",
+        "sorteo": 97812,
+        "fecha": "2026-11-25",
         "modalidades": [
           {
             "nombre": "Extracto de 20 números (00 al 99)",
@@ -641,15 +641,15 @@
               7,
               6,
               5,
-              24,
+              25,
               11,
               21,
               80,
               50,
               10,
+              24,
               3,
               9,
-              25,
               23,
               26,
               27,
@@ -667,6 +667,45 @@
         ]
       },
       "historico": [
+        {
+          "sorteo": 97802,
+          "fecha": "2026-11-24",
+          "modalidades": [
+            {
+              "nombre": "Extracto de 20 números (00 al 99)",
+              "bolillas": [
+                0,
+                1,
+                8,
+                2,
+                7,
+                6,
+                5,
+                24,
+                11,
+                21,
+                80,
+                50,
+                10,
+                3,
+                9,
+                25,
+                23,
+                26,
+                27,
+                28
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Ver extracto",
+                  "pozo": "$100000000",
+                  "premioIndividual": "Ver extracto"
+                }
+              ]
+            }
+          ]
+        },
         {
           "sorteo": 97792,
           "fecha": "2026-11-23",
@@ -1637,7 +1676,28 @@
             "nombre": "Nocturna",
             "hora": "21:00",
             "sorteo": 0,
-            "extracto": []
+            "extracto": [
+              "1418",
+              "8531",
+              "3238",
+              "2764",
+              "1561",
+              "5989",
+              "9482",
+              "5857",
+              "5206",
+              "9585",
+              "7314",
+              "5086",
+              "5031",
+              "1314",
+              "3942",
+              "6977",
+              "5163",
+              "7137",
+              "6300",
+              "1663"
+            ]
           }
         }
       }
