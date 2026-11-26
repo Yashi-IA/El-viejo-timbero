@@ -338,6 +338,9 @@ function archiveIfNewDraw(gameKey, gameObj, newDraw, pozoProximo = null) {
     }
 
     if (newSorteo === prevSorteo) {
+      if (normalizedNew.numeroPlus === undefined && prev.numeroPlus !== undefined) {
+        normalizedNew.numeroPlus = prev.numeroPlus;
+      }
       // Mismo sorteo: solo actualiza si aporta datos más completos (ej. escrutinio o más modalidades)
       const prevScore = drawCompletenessScore(prev);
       const newScore = drawCompletenessScore(normalizedNew);
@@ -377,590 +380,405 @@ function archiveIfNewDraw(gameKey, gameObj, newDraw, pozoProximo = null) {
   return true;
 }
 
-// --- Limpieza anti-copia de TuJugada y parsers de secciones ---
-
-function stripTuJugadaHidden($, $el) {
-  const $clone = $el.clone();
-  $clone.find('script, style, noscript').remove();
-  $clone.find('[style]').each((_, node) => {
-    const st = ($(node).attr('style') || '').toLowerCase();
-    if (/display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0/.test(st)) {
-      $(node).remove();
-    }
-  });
-  return cleanText($clone.text())
-    .replace(/---\s*MENSAJE PARA EL VISITANTE[\s\S]*?TUJUGADA\.COM\.AR!*/gi, ' ');
-}
-
-function extractHeadingBlocks($, containerSelector, headingSelector) {
-  const blocks = [];
-  const $root = $(containerSelector).first().length ? $(containerSelector).first() : $('body');
-  $root.find(headingSelector).each((_, h) => {
-    const title = cleanText($(h).text());
-    const $sibs = $(h).nextUntil(headingSelector);
-    blocks.push({ title, $heading: $(h), $content: $sibs });
-  });
-  return blocks;
-}
-
 // ============================================================================
-// PARSERS DE POCEADOS (Primario: Lotería de Salta / TuJugada + Respaldos)
+// EXTRACTOR JSON DE LA NACIÓN (Fusion.globalContent)
 // ============================================================================
 
-async function parseQuini6Salta() {
-  const html = await fetchHtml('https://www.loteriadesalta.com/resultados-oficiales/quini-6/');
-  const $ = cheerio.load(html);
-
-  const mainText = cleanText($('main, .entry-content, article, body').first().text());
-  const sorteoMatch = mainText.match(/Sorteo\s*N\.?[°º]?\s*(\d{4})/i);
-  if (!sorteoMatch) throw new Error('Quini6 Salta: sorteo no encontrado');
-  const sorteo = Number(sorteoMatch[1]);
-  const fecha = parseFecha(mainText) || getFechaAR();
-
-  let pozoProximo = null;
-  const pozoCard = mainText.match(/Quini 6[\s\S]{0,120}?Pozo estimado\s*(\$\s*[\d.,]+)/i)
-    || mainText.match(/Pr[óo]ximo pozo[^$]{0,40}(\$\s*[\d.,]+)/i);
-  if (pozoCard) pozoProximo = formatMoney(pozoCard[1]);
-
-  // Extraer las 4 modalidades desde los bloques de números y tablas en el área principal
-  const MOD_SPECS = [
-    { key: 'tradicional', nombre: 'Tradicional Primer Sorteo', match: /^tradicional$/i },
-    { key: 'segunda', nombre: 'La Segunda del Quini', match: /^la segunda$/i },
-    { key: 'revancha', nombre: 'Revancha', match: /^revancha$/i },
-    { key: 'siempre', nombre: 'Siempre Sale', match: /^siempre sale$/i }
-  ];
-
-  // Buscar tablas dentro de la sección de premios y bloques con título de modalidad
-  const $scope = $('main, .entry-content, article').first().length ? $('main, .entry-content, article').first() : $('body');
-  const premiosByMod = {};
-
-  $scope.find('table').each((_, tbl) => {
-    const $tbl = $(tbl);
-    const prevHeading = cleanText($tbl.prevAll('h2, h3, h4, strong, p').first().text());
-    const parentHeading = cleanText($tbl.closest('div, section').find('h2, h3, h4').first().text());
-    const label = normalizeKey(prevHeading || parentHeading);
-    for (const spec of MOD_SPECS) {
-      if (label.includes(normalizeKey(spec.nombre.split(' ')[0])) || (spec.key === 'segunda' && label.includes('segunda'))) {
-        if (!premiosByMod[spec.key]) {
-          const parsed = parseTablePremios($, $tbl);
-          if (parsed.length) premiosByMod[spec.key] = parsed;
-        }
-      }
-    }
-  });
-
-  // Fallback si las tablas de premios están ordenadas secuencialmente (4 tablas de premios)
-  const premioTables = $scope.find('table').filter((_, tbl) => {
-    const t = normalizeKey($(tbl).text());
-    return t.includes('aciertos') && (t.includes('ganadores') || t.includes('pozo'));
-  }).toArray();
-  if (Object.keys(premiosByMod).length < 4 && premioTables.length >= 4) {
-    MOD_SPECS.forEach((spec, idx) => {
-      if (!premiosByMod[spec.key]) {
-        premiosByMod[spec.key] = parseTablePremios($, $(premioTables[idx]));
-      }
-    });
+function extractLaNacionJson(html) {
+  const markerRe = /Fusion\.globalContent\s*=\s*/;
+  const m = markerRe.exec(html);
+  if (!m) {
+    throw new Error('La Nación: Fusion.globalContent no encontrado');
   }
 
-  const modalidades = [];
-  for (const spec of MOD_SPECS) {
-    // Buscar el encabezado de la modalidad que precede a sus 6 bolillas
-    let bolillas = null;
-    $scope.find('h2, h3, h4, h5, p, span, div').each((_, el) => {
-      if (bolillas) return;
-      const txt = cleanText($(el).text());
-      if (spec.match.test(txt)) {
-        // Buscar en el contenedor padre o hermano inmediato los 6 números
-        const candidates = [
-          cleanText($(el).next().text()),
-          cleanText($(el).parent().text()),
-          cleanText($(el).nextAll().slice(0, 3).text())
-        ];
-        for (const c of candidates) {
-          const toks = c.replace(txt, '').match(/\b\d{1,2}\b/g) || [];
-          const parsed = parseNumbersArray(toks, 0, 45, 6);
-          if (parsed) {
-            bolillas = parsed.sort((a, b) => a - b);
-            break;
-          }
-        }
-      }
-    });
+  let pos = m.index + m[0].length;
+  while (pos < html.length && (html[pos] === ' ' || html[pos] === '\t' || html[pos] === '\n' || html[pos] === '\r' || html[pos] === '(')) {
+    pos++;
+  }
+  if (html[pos] !== '{') {
+    throw new Error('La Nación: inicio de objeto JSON no encontrado en Fusion.globalContent');
+  }
 
-    if (bolillas) {
-      modalidades.push({
-        nombre: spec.nombre,
-        bolillas,
-        premios: premiosByMod[spec.key]?.length
-          ? premiosByMod[spec.key]
-          : [{ aciertos: '6 aciertos', ganadores: 'A confirmar', pozo: 'A confirmar', premioIndividual: 'A confirmar' }]
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  let endPos = -1;
+
+  for (let i = pos; i < html.length; i++) {
+    const ch = html[i];
+    if (inString) {
+      if (escaped) {
+        escaped = false;
+      } else if (ch === '\\') {
+        escaped = true;
+      } else if (ch === '"') {
+        inString = false;
+      }
+      continue;
+    }
+    if (ch === '"') {
+      inString = true;
+    } else if (ch === '{') {
+      depth++;
+    } else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        endPos = i;
+        break;
+      }
+    }
+  }
+
+  if (endPos === -1) {
+    throw new Error('La Nación: llaves desbalanceadas en Fusion.globalContent');
+  }
+
+  return JSON.parse(html.slice(pos, endPos + 1));
+}
+
+function extractLaNacionSorteo(html, $, json) {
+  const metaNum = cleanText(json?.metaData?.lotteryNumber);
+  if (/^\d{3,6}$/.test(metaNum)) {
+    return Number(metaNum);
+  }
+  const metaNumMatch = metaNum.match(/\b(\d{3,6})\b/);
+  if (metaNumMatch) {
+    return Number(metaNumMatch[1]);
+  }
+
+  const details = Array.isArray(json?.dataService?.lotteryDetail) ? json.dataService.lotteryDetail : [];
+  for (const item of details) {
+    const cand = cleanText(item?.lotteryNumber ?? item?.drawNumber ?? item?.sorteo ?? '');
+    if (/^\d{3,6}$/.test(cand)) return Number(cand);
+  }
+
+  const candidates = [
+    $('title').text(),
+    $('meta[property="og:title"]').attr('content'),
+    $('meta[name="description"]').attr('content'),
+    $('meta[property="og:description"]').attr('content'),
+    JSON.stringify(json?.metaData || {}),
+    $('h1, h2').map((_, el) => $(el).text()).get().join(' ')
+  ];
+
+  const sorteoRe = /sorteo\s*N?\.?[°º]?\s*(\d{3,6})/i;
+  for (const raw of candidates) {
+    const t = cleanText(raw).replace(/pr[óo]ximo\s+sorteo[^.\n]{0,40}/gi, '');
+    const m = t.match(sorteoRe);
+    if (m) return Number(m[1]);
+  }
+
+  const $bodyClone = $('body').clone();
+  $bodyClone.find('script, style, noscript').remove();
+  const bodyText = cleanText($bodyClone.text()).replace(/pr[óo]ximo\s+sorteo[^.\n]{0,40}/gi, '');
+  const bodyM = bodyText.match(sorteoRe);
+  if (bodyM) return Number(bodyM[1]);
+
+  return null;
+}
+
+function parseLaNacionWinnersTable(winnersTable, defaultAciertos = '6 aciertos') {
+  if (!Array.isArray(winnersTable) || winnersTable.length === 0) {
+    return [{
+      aciertos: defaultAciertos,
+      ganadores: 'A confirmar',
+      pozo: 'A confirmar',
+      premioIndividual: 'A confirmar'
+    }];
+  }
+
+  const rows = [];
+  for (const row of winnersTable) {
+    if (!row || typeof row !== 'object') continue;
+    const aciertos = normalizeAciertos(row.name ?? row.aciertos ?? row.category ?? '');
+    const ganadores = normalizeGanadores(row.winners ?? row.ganadores ?? '');
+    const money = formatMoney(row.amount ?? row.prize ?? row.pozo ?? '');
+    const isZeroMoney = !money || /^\$\s*0+(?:[.,]0+)?$/.test(money);
+
+    if (ganadores === 'Vacante') {
+      rows.push({
+        aciertos,
+        ganadores: 'Vacante',
+        pozo: isZeroMoney ? 'Vacante' : money,
+        premioIndividual: 'Vacante'
+      });
+    } else if (ganadores === 'A confirmar') {
+      rows.push({
+        aciertos,
+        ganadores: 'A confirmar',
+        pozo: isZeroMoney ? 'A confirmar' : money,
+        premioIndividual: 'A confirmar'
+      });
+    } else {
+      rows.push({
+        aciertos,
+        ganadores,
+        pozo: isZeroMoney ? 'A confirmar' : money,
+        premioIndividual: isZeroMoney ? 'A confirmar' : money
       });
     }
   }
 
-  if (modalidades.length < 4) {
-    throw new Error(`Quini6 Salta: solo ${modalidades.length}/4 modalidades parseadas`);
-  }
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'loteriadesalta.com' };
+  return rows.length ? rows : [{
+    aciertos: defaultAciertos,
+    ganadores: 'A confirmar',
+    pozo: 'A confirmar',
+    premioIndividual: 'A confirmar'
+  }];
 }
 
-async function parseQuini6TuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/quini6.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('main, #main, .content, body').first().text());
-  const headerM = bodyText.match(/QUINI 6\s*Nro:\s*(\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Quini6 TuJugada: cabecera no encontrada');
+function extractLaNacionPozoProximo(json, details) {
+  for (const item of details) {
+    const pot = formatMoney(item?.estimatedPot);
+    if (pot && !/^\$\s*0+(?:[.,]0+)?$/.test(pot) && pot !== 'Vacante' && pot !== 'A confirmar') {
+      return pot;
+    }
+  }
+  const acum = json?.acumuladoGeneral;
+  if (typeof acum === 'string' || typeof acum === 'number') {
+    const pot = formatMoney(String(acum));
+    if (pot && !/^\$\s*0+(?:[.,]0+)?$/.test(pot)) return pot;
+  } else if (acum && typeof acum === 'object') {
+    for (const k of ['estimatedPot', 'pot', 'amount', 'monto', 'total', 'pozo']) {
+      if (acum[k] !== undefined && acum[k] !== null) {
+        const pot = formatMoney(String(acum[k]));
+        if (pot && !/^\$\s*0+(?:[.,]0+)?$/.test(pot)) return pot;
+      }
+    }
+    for (const v of Object.values(acum)) {
+      if (typeof v === 'string' && /[\d$]/.test(v)) {
+        const pot = formatMoney(v);
+        if (pot && !/^\$\s*0+(?:[.,]0+)?$/.test(pot)) return pot;
+      }
+    }
+  }
+  return null;
+}
 
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const MODS = [
-    { marker: 'TRADICIONAL', end: 'PREMIOS TRADICIONAL', nombre: 'Tradicional Primer Sorteo' },
-    { marker: 'SEGUNDA VUELTA', end: 'PREMIOS 2DA VUELTA', nombre: 'La Segunda del Quini' },
-    { marker: 'REVANCHA', end: 'PREMIOS REVANCHA', nombre: 'Revancha' },
-    { marker: 'SIEMPRE SALE', end: 'PREMIOS SIEMPRE SALE', nombre: 'Siempre Sale' }
+function extractLotoNumeroPlus(json, $, details) {
+  const fromFields = [
+    json?.dataService?.numeroPlus,
+    json?.dataService?.plus,
+    json?.dataService?.additional,
+    json?.metaData?.numeroPlus,
+    json?.metaData?.plus,
+    json?.metaData?.additional,
+    ...details.flatMap(d => [d?.numeroPlus, d?.plus, d?.additional, d?.additionalNumber])
   ];
+  for (const val of fromFields) {
+    if (val === undefined || val === null || val === '') continue;
+    const n = Number(String(val).trim());
+    if (Number.isInteger(n) && n >= 0 && n <= 9) return n;
+  }
 
-  const tables = $('table').toArray();
-  const modalidades = [];
+  const $bodyClone = $('body').clone();
+  $bodyClone.find('script, style, noscript').remove();
+  const bodyText = cleanText($bodyClone.text());
+  const plusM = bodyText.match(/(?:n[úu]mero\s+plus|bolilla\s+plus|plus\s+n[°º]?)\s*[:\-]?\s*(\d)\b/i);
+  if (plusM) {
+    const n = Number(plusM[1]);
+    if (Number.isInteger(n) && n >= 0 && n <= 9) return n;
+  }
+  return undefined;
+}
 
-  for (let i = 0; i < MODS.length; i++) {
-    const m = MODS[i];
-    const startIdx = bodyText.indexOf(m.marker);
-    const endIdx = bodyText.indexOf(m.end, startIdx);
-    if (startIdx === -1 || endIdx === -1) continue;
-    const chunk = bodyText.slice(startIdx + m.marker.length, endIdx);
-    const bolillas = parseNumbersArray(chunk.match(/\b\d{1,2}\b/g) || [], 0, 45, 6);
+// ============================================================================
+// PARSERS DE POCEADOS (Primario: La Nación JSON + Respaldo NotiTimba Poceada)
+// ============================================================================
+
+const LA_NACION_POCEADOS = {
+  quini6: {
+    url: 'https://www.lanacion.com.ar/loterias/quini-6/',
+    min: 0,
+    max: 45,
+    expectedBolillas: 6,
+    defaultAciertos: '6 aciertos',
+    minModalidades: 4,
+    canonicalOrder: ['Tradicional Primer Sorteo', 'La Segunda del Quini', 'Revancha', 'Siempre Sale'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('pozo extra') || k === 'extra') return null; // 16 bolillas, se ignora
+      if (k.includes('tradicional')) return 'Tradicional Primer Sorteo';
+      if (k.includes('segunda')) return 'La Segunda del Quini';
+      if (k.includes('revancha')) return 'Revancha';
+      if (k.includes('siempre sale')) return 'Siempre Sale';
+      return null;
+    }
+  },
+  lotoPlus: {
+    url: 'https://www.lanacion.com.ar/loterias/loto/',
+    min: 0,
+    max: 45,
+    expectedBolillas: 6,
+    defaultAciertos: '6 aciertos',
+    minModalidades: 4,
+    hasNumeroPlus: true,
+    canonicalOrder: ['Tradicional', 'Match', 'Desquite', 'Sale o Sale'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('tradicional')) return 'Tradicional';
+      if (k.includes('match')) return 'Match';
+      if (k.includes('desquite')) return 'Desquite';
+      if (k.includes('sale o sale')) return 'Sale o Sale';
+      return null;
+    }
+  },
+  telekino: {
+    url: 'https://www.lanacion.com.ar/loterias/telekino/',
+    min: 1,
+    max: 25,
+    expectedBolillas: 15,
+    defaultAciertos: '15 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Telekino Tradicional', 'Rekino'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('rekino')) return 'Rekino';
+      if (k.includes('telekino') || k.includes('tradicional')) return 'Telekino Tradicional';
+      return null;
+    }
+  },
+  brinco: {
+    url: 'https://www.lanacion.com.ar/loterias/brinco/',
+    min: 0,
+    max: 39,
+    expectedBolillas: 6,
+    defaultAciertos: '6 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Brinco Tradicional', 'Brinco Junior Siempre Sale'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('junior')) return 'Brinco Junior Siempre Sale';
+      if (k.includes('tradicional') || k === 'brinco') return 'Brinco Tradicional';
+      return null;
+    }
+  },
+  loto5: {
+    url: 'https://www.lanacion.com.ar/loterias/loto-5/',
+    min: 0,
+    max: 36,
+    expectedBolillas: 5,
+    defaultAciertos: '5 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Sorteo Tradicional (00 al 36)'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('loto 5') || k.includes('tradicional') || k === 'loto5' || k.includes('sorteo')) {
+        return 'Sorteo Tradicional (00 al 36)';
+      }
+      return 'Sorteo Tradicional (00 al 36)';
+    }
+  },
+  laPoceada: {
+    url: 'https://www.lanacion.com.ar/loterias/quiniela-poceada/',
+    min: 0,
+    max: 99,
+    expectedBolillas: 20,
+    defaultAciertos: '8 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Extracto de 20 números (00 al 99)'],
+    mapModalidad() {
+      return 'Extracto de 20 números (00 al 99)';
+    }
+  },
+  quinielaPlus: {
+    url: 'https://www.lanacion.com.ar/loterias/quiniela-plus/',
+    min: 0,
+    max: 99,
+    expectedBolillas: 20,
+    defaultAciertos: '8 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Quiniela Plus (Tradicional)', 'Super Plus', 'Chance Plus'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('super')) return 'Super Plus';
+      if (k.includes('chance')) return 'Chance Plus';
+      if (k.includes('quiniela plus') || k.includes('tradicional')) return 'Quiniela Plus (Tradicional)';
+      return null;
+    }
+  }
+};
+
+function parseLaNacionPoceadoFromHtml(gameKey, html, existingUltimo = null) {
+  const spec = LA_NACION_POCEADOS[gameKey];
+  if (!spec) throw new Error(`Configuración de poceado inexistente para ${gameKey}`);
+
+  const json = extractLaNacionJson(html);
+  const $ = cheerio.load(html);
+  const details = Array.isArray(json?.dataService?.lotteryDetail) ? json.dataService.lotteryDetail : [];
+  if (details.length === 0) {
+    throw new Error(`La Nación ${gameKey}: dataService.lotteryDetail vacío`);
+  }
+
+  const sorteo = extractLaNacionSorteo(html, $, json);
+  if (!sorteo || !Number.isInteger(sorteo) || sorteo <= 0) {
+    throw new Error(`La Nación ${gameKey}: número de sorteo no encontrado`);
+  }
+
+  const fallbackYear = Number(getFechaAR().slice(0, 4));
+  const metaFecha = parseFecha(json?.metaData?.completeDay, fallbackYear);
+  const datedItems = details.map(item => ({
+    item,
+    fecha: parseFecha(item?.date, fallbackYear) || metaFecha
+  }));
+  const validDates = datedItems.map(x => x.fecha).filter(Boolean).sort();
+  const fecha = validDates[validDates.length - 1];
+  if (!fecha) {
+    throw new Error(`La Nación ${gameKey}: fecha inválida o ausente`);
+  }
+
+  const modalidadesByName = new Map();
+  for (const { item, fecha: itemFecha } of datedItems) {
+    if (itemFecha && itemFecha !== fecha) continue;
+    const modName = spec.mapModalidad(item?.name || '');
+    if (!modName) continue;
+
+    const bolillas = parseNumbersArray(item?.results || [], spec.min, spec.max, spec.expectedBolillas);
     if (!bolillas) continue;
 
-    // Buscar la tabla de premios correspondiente
-    const tbl = tables.find(t => {
-      const prev = cleanText($(t).prevAll().slice(0, 3).text());
-      return prev.includes(m.end) || cleanText($(t).text()).includes(m.end);
-    }) || tables[i];
-
-    const premios = tbl ? parseTablePremios($, $(tbl)) : [];
-    modalidades.push({
-      nombre: m.nombre,
-      bolillas: bolillas.sort((a, b) => a - b),
-      premios: premios.length ? premios : [{ aciertos: '6 aciertos', ganadores: 'A confirmar', pozo: 'A confirmar', premioIndividual: 'A confirmar' }]
-    });
-  }
-
-  if (modalidades.length < 4) throw new Error(`Quini6 TuJugada: ${modalidades.length}/4 modalidades`);
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'tujugada.com.ar' };
-}
-
-async function parseLotoPlusSalta() {
-  const html = await fetchHtml('https://www.loteriadesalta.com/resultados-oficiales/loto/');
-  const $ = cheerio.load(html);
-  const $scope = $('main, .entry-content, article').first().length ? $('main, .entry-content, article').first() : $('body');
-  const mainText = cleanText($scope.text());
-
-  const sorteoMatch = mainText.match(/Sorteo\s*N\.?[°º]?\s*(\d{4})/i);
-  if (!sorteoMatch) throw new Error('Loto Plus Salta: sorteo no encontrado');
-  const sorteo = Number(sorteoMatch[1]);
-  const fecha = parseFecha(mainText) || getFechaAR();
-
-  let pozoProximo = null;
-  const pozoM = mainText.match(/Loto Plus[\s\S]{0,120}?Pozo estimado\s*(\$\s*[\d.,]+)/i);
-  if (pozoM) pozoProximo = formatMoney(pozoM[1]);
-
-  let numeroPlus;
-  const plusM = mainText.match(/N[úu]mero Plus\s*(\d)\b/i);
-  if (plusM) numeroPlus = Number(plusM[1]);
-
-  const MOD_SPECS = [
-    { key: 'tradicional', nombre: 'Tradicional', match: /^Tradicional$/i },
-    { key: 'match', nombre: 'Match', match: /^Match$/i },
-    { key: 'desquite', nombre: 'Desquite', match: /^Desquite$/i },
-    { key: 'sale', nombre: 'Sale o Sale', match: /^Sale o Sale$/i }
-  ];
-
-  const premioTables = $scope.find('table').filter((_, tbl) => {
-    const t = normalizeKey($(tbl).text());
-    return t.includes('aciertos') && (t.includes('ganadores') || t.includes('pozo'));
-  }).toArray();
-
-  const modalidades = [];
-  MOD_SPECS.forEach((spec, idx) => {
-    let bolillas = null;
-    $scope.find('h2, h3, h4, h5, p, span, div').each((_, el) => {
-      if (bolillas) return;
-      const txt = cleanText($(el).text());
-      if (spec.match.test(txt)) {
-        const candidates = [
-          cleanText($(el).next().text()),
-          cleanText($(el).parent().text()),
-          cleanText($(el).nextAll().slice(0, 3).text())
-        ];
-        for (const c of candidates) {
-          const toks = c.replace(txt, '').match(/\b\d{1,2}\b/g) || [];
-          const parsed = parseNumbersArray(toks, 0, 45, 6);
-          if (parsed) {
-            bolillas = parsed.sort((a, b) => a - b);
-            break;
-          }
-        }
-      }
-    });
-
-    if (bolillas) {
-      const premios = premioTables[idx] ? parseTablePremios($, $(premioTables[idx])) : [];
-      modalidades.push({
-        nombre: spec.nombre,
-        bolillas,
-        premios: premios.length ? premios : [{ aciertos: '6 aciertos', ganadores: 'A confirmar', pozo: 'A confirmar', premioIndividual: 'A confirmar' }]
+    if (!modalidadesByName.has(modName)) {
+      modalidadesByName.set(modName, {
+        nombre: modName,
+        bolillas: bolillas.sort((a, b) => a - b),
+        premios: parseLaNacionWinnersTable(item?.winners_table, spec.defaultAciertos)
       });
     }
-  });
-
-  if (modalidades.length < 4) throw new Error(`Loto Plus Salta: ${modalidades.length}/4 modalidades`);
-  const draw = { sorteo, fecha, modalidades };
-  if (numeroPlus !== undefined && numeroPlus >= 0 && numeroPlus <= 9) draw.numeroPlus = numeroPlus;
-  return { draw, pozoProximo, source: 'loteriadesalta.com' };
-}
-
-async function parseLotoPlusTuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/loto.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('body').text());
-
-  const headerM = bodyText.match(/LOTO PLUS\s*Nro:\s*(\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Loto Plus TuJugada: cabecera no encontrada');
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO LOTO PLUS\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const plusM = bodyText.match(/N[úu]mero plus:\s*(\d)\b/i);
-  const numeroPlus = plusM ? Number(plusM[1]) : undefined;
-
-  const MODS = [
-    { marker: 'TRADICIONAL', end: 'PREMIOS SORTEO TRADICIONAL', nombre: 'Tradicional' },
-    { marker: 'MATCH', end: 'PREMIOS SORTEO MATCH', nombre: 'Match' },
-    { marker: 'DESQUITE', end: 'PREMIOS SORTEO DESQUITE', nombre: 'Desquite' },
-    { marker: 'SALE O SALE', end: 'PREMIOS SALE O SALE', nombre: 'Sale o Sale' }
-  ];
-
-  const tables = $('table').filter((_, t) => normalizeKey($(t).text()).includes('gan.')).toArray();
-  const modalidades = [];
-
-  for (let i = 0; i < MODS.length; i++) {
-    const m = MODS[i];
-    const startIdx = bodyText.indexOf(m.marker);
-    const endIdx = bodyText.indexOf(m.end, startIdx);
-    if (startIdx === -1 || endIdx === -1) continue;
-    const chunk = bodyText.slice(startIdx + m.marker.length, endIdx);
-    const bolillas = parseNumbersArray(chunk.match(/\b\d{1,2}\b/g) || [], 0, 45, 6);
-    if (!bolillas) continue;
-    const premios = tables[i] ? parseTablePremios($, $(tables[i])) : [];
-    modalidades.push({
-      nombre: m.nombre,
-      bolillas: bolillas.sort((a, b) => a - b),
-      premios: premios.length ? premios : [{ aciertos: '6 aciertos', ganadores: 'A confirmar', pozo: 'A confirmar', premioIndividual: 'A confirmar' }]
-    });
   }
-
-  if (modalidades.length < 4) throw new Error(`Loto Plus TuJugada: ${modalidades.length}/4 modalidades`);
-  const draw = { sorteo, fecha, modalidades };
-  if (numeroPlus !== undefined) draw.numeroPlus = numeroPlus;
-  return { draw, pozoProximo, source: 'tujugada.com.ar' };
-}
-
-async function parseBrincoSalta() {
-  const html = await fetchHtml('https://www.loteriadesalta.com/resultados-oficiales/brinco/');
-  const $ = cheerio.load(html);
-  const $scope = $('main, .entry-content, article').first().length ? $('main, .entry-content, article').first() : $('body');
-  const mainText = cleanText($scope.text());
-
-  const sorteoMatch = mainText.match(/Sorteo\s*Nro\.?\s*(\d{4})/i) || mainText.match(/sorteo\s*N\.?[°º]?\s*(\d{4})/i);
-  if (!sorteoMatch) throw new Error('Brinco Salta: sorteo no encontrado');
-  const sorteo = Number(sorteoMatch[1]);
-  const fecha = parseFecha(mainText) || getFechaAR();
-
-  const pozoM = mainText.match(/PR[ÓO]XIMO POZO ESTIMADO:\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const tradM = mainText.match(/Tradicional\s+((?:\d{1,2}\s+){6})/i) || mainText.match(/Tradicional:\s*([\d\s\-]+)/i);
-  const junM = mainText.match(/Brinco Junior(?:\s+Siempre Sale)?(?:\s+N[úu]meros:)?\s+([\d\s\-]+)/i);
-
-  const bolTrad = tradM ? parseNumbersArray(tradM[1].match(/\b\d{1,2}\b/g) || [], 0, 39, 6) : null;
-  const bolJun = junM ? parseNumbersArray(junM[1].match(/\b\d{1,2}\b/g) || [], 0, 39, 6) : null;
-
-  const premioTables = $scope.find('table').filter((_, t) => {
-    const k = normalizeKey($(t).text());
-    return k.includes('aciertos') && k.includes('ganadores');
-  }).toArray();
 
   const modalidades = [];
-  if (bolTrad) {
-    const premios = premioTables[0] ? parseTablePremios($, $(premioTables[0])) : [];
-    modalidades.push({
-      nombre: 'Brinco Tradicional',
-      bolillas: bolTrad.sort((a, b) => a - b),
-      premios: premios.length ? premios : [{ aciertos: '6 aciertos', ganadores: 'A confirmar', pozo: 'A confirmar', premioIndividual: 'A confirmar' }]
-    });
-  }
-  if (bolJun) {
-    const premios = premioTables[1] ? parseTablePremios($, $(premioTables[1])) : [];
-    modalidades.push({
-      nombre: 'Brinco Junior Siempre Sale',
-      bolillas: bolJun.sort((a, b) => a - b),
-      premios: premios.length ? premios : [{ aciertos: '5 aciertos', ganadores: 'A confirmar', pozo: 'A confirmar', premioIndividual: 'A confirmar' }]
-    });
-  }
-
-  if (!bolTrad) throw new Error('Brinco Salta: no se obtuvieron bolillas Tradicional');
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'loteriadesalta.com' };
-}
-
-async function parseBrincoTuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/brinco.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('body').text());
-
-  const headerM = bodyText.match(/BRINCO\s*Sorteo:\s*(\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Brinco TuJugada: cabecera no encontrada');
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const tradSection = bodyText.slice(bodyText.indexOf('MODALIDAD TRADICIONAL'), bodyText.indexOf('PREMIOS TRADICIONAL'));
-  const junSection = bodyText.slice(bodyText.indexOf('MODALIDAD JUNIOR'), bodyText.indexOf('PREMIOS JUNIOR'));
-
-  const bolTrad = parseNumbersArray(tradSection.match(/\b\d{1,2}\b/g) || [], 0, 39, 6);
-  const bolJun = parseNumbersArray(junSection.match(/\b\d{1,2}\b/g) || [], 0, 39, 6);
-  if (!bolTrad) throw new Error('Brinco TuJugada: sin bolillas');
-
-  const tables = $('table').filter((_, t) => normalizeKey($(t).text()).includes('ganad')).toArray();
-  const modalidades = [{
-    nombre: 'Brinco Tradicional',
-    bolillas: bolTrad.sort((a, b) => a - b),
-    premios: tables[0] ? parseTablePremios($, $(tables[0])) : []
-  }];
-  if (bolJun) {
-    modalidades.push({
-      nombre: 'Brinco Junior Siempre Sale',
-      bolillas: bolJun.sort((a, b) => a - b),
-      premios: tables[1] ? parseTablePremios($, $(tables[1])) : []
-    });
-  }
-
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'tujugada.com.ar' };
-}
-
-async function parseTelekinoSalta() {
-  const html = await fetchHtml('https://www.loteriadesalta.com/resultados-oficiales/telekino/');
-  const $ = cheerio.load(html);
-  const $scope = $('main, .entry-content, article').first().length ? $('main, .entry-content, article').first() : $('body');
-  const mainText = cleanText($scope.text());
-
-  const sorteoMatch = mainText.match(/Sorteo\s*N\.?[°º]?\s*(\d{4})/i);
-  if (!sorteoMatch) throw new Error('Telekino Salta: sorteo no encontrado');
-  const sorteo = Number(sorteoMatch[1]);
-  const fecha = parseFecha(mainText) || getFechaAR();
-
-  let pozoProximo = null;
-  const pozoM = mainText.match(/Pr[óo]ximo sorteo N°?\s*\d+:\s*Pozo estimado[^$]*(\$\s*[\d.,]+(?:\s*Millones)?)/i)
-    || mainText.match(/Telekino[\s\S]{0,120}?Pozo estimado\s*(\$\s*[\d.,]+)/i);
-  if (pozoM) pozoProximo = formatMoney(pozoM[1]);
-
-  let bolTele = null;
-  let bolRek = null;
-  $scope.find('h2, h3, h4, h5, p, span, div').each((_, el) => {
-    const txt = cleanText($(el).text());
-    if (!bolTele && /^Telekino$/i.test(txt)) {
-      const cand = cleanText($(el).next().text()) || cleanText($(el).parent().text());
-      const parsed = parseNumbersArray(cand.replace(txt, '').match(/\b\d{1,2}\b/g) || [], 1, 25, 15);
-      if (parsed) bolTele = parsed.sort((a, b) => a - b);
+  for (const name of spec.canonicalOrder) {
+    if (modalidadesByName.has(name)) {
+      modalidades.push(modalidadesByName.get(name));
     }
-    if (!bolRek && /^Rekino$/i.test(txt)) {
-      const cand = cleanText($(el).next().text()) || cleanText($(el).parent().text());
-      const parsed = parseNumbersArray(cand.replace(txt, '').match(/\b\d{1,2}\b/g) || [], 1, 25, 15);
-      if (parsed) bolRek = parsed.sort((a, b) => a - b);
+  }
+  for (const [name, mod] of modalidadesByName.entries()) {
+    if (!spec.canonicalOrder.includes(name)) {
+      modalidades.push(mod);
     }
-  });
-
-  if (!bolTele) throw new Error('Telekino Salta: sin bolillas Telekino');
-
-  const tables = $scope.find('table').filter((_, t) => normalizeKey($(t).text()).includes('ganadores')).toArray();
-  const teleTable = tables.find(t => normalizeKey($(t).text()).includes('15 aciertos'));
-  const rekTable = tables.find(t => normalizeKey($(t).text()).includes('rekino'));
-
-  const modalidades = [{
-    nombre: 'Telekino Tradicional',
-    bolillas: bolTele,
-    premios: teleTable ? parseTablePremios($, $(teleTable)) : []
-  }];
-  if (bolRek) {
-    modalidades.push({
-      nombre: 'Rekino',
-      bolillas: bolRek,
-      premios: rekTable ? parseTablePremios($, $(rekTable)) : []
-    });
   }
 
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'loteriadesalta.com' };
-}
-
-async function parseTelekinoTuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/telekino.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('body').text());
-
-  const headerM = bodyText.match(/RESULTADO TELEKINO\s*Sorteo:\s*(\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Telekino TuJugada: cabecera no encontrada');
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO TELEKINO\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const teleChunk = bodyText.slice(bodyText.indexOf('RESULTADO TELEKINO'), bodyText.indexOf('PREMIOS SORTEO TELEKINO'));
-  const rekStart = bodyText.indexOf('RESULTADO REKINO');
-  const rekEnd = bodyText.indexOf('PREMIOS SORTEO REKINO');
-  const rekChunk = rekStart >= 0 && rekEnd > rekStart ? bodyText.slice(rekStart, rekEnd) : '';
-
-  const bolTele = parseNumbersArray(teleChunk.replace(headerM[0], '').match(/\b\d{1,2}\b/g) || [], 1, 25, 15);
-  const bolRek = rekChunk ? parseNumbersArray(rekChunk.replace(/Sorteo:\s*\d+\s*-\s*\d+\/\d+\/\d+/i, '').match(/\b\d{1,2}\b/g) || [], 1, 25, 15) : null;
-  if (!bolTele) throw new Error('Telekino TuJugada: sin bolillas');
-
-  const tables = $('table').filter((_, t) => normalizeKey($(t).text()).includes('ganad')).toArray();
-  const modalidades = [{
-    nombre: 'Telekino Tradicional',
-    bolillas: bolTele.sort((a, b) => a - b),
-    premios: tables[0] ? parseTablePremios($, $(tables[0])) : []
-  }];
-  if (bolRek) {
-    modalidades.push({
-      nombre: 'Rekino',
-      bolillas: bolRek.sort((a, b) => a - b),
-      premios: tables[1] ? parseTablePremios($, $(tables[1])) : []
-    });
+  if (modalidades.length < spec.minModalidades) {
+    throw new Error(`La Nación ${gameKey}: solo ${modalidades.length}/${spec.minModalidades} modalidades válidas`);
   }
 
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'tujugada.com.ar' };
+  const draw = { sorteo, fecha, modalidades };
+  if (spec.hasNumeroPlus) {
+    let numeroPlus = extractLotoNumeroPlus(json, $, details);
+    if (numeroPlus === undefined && existingUltimo && Number(existingUltimo.sorteo) === sorteo && existingUltimo.numeroPlus !== undefined) {
+      numeroPlus = existingUltimo.numeroPlus;
+    }
+    if (numeroPlus !== undefined) {
+      draw.numeroPlus = numeroPlus;
+    }
+  }
+
+  const pozoProximo = extractLaNacionPozoProximo(json, details);
+  return { draw, pozoProximo, source: 'lanacion.com.ar' };
 }
 
-async function parseLoto5Salta() {
-  const html = await fetchHtml('https://www.loteriadesalta.com/resultados-oficiales/loto-5/');
-  const $ = cheerio.load(html);
-  const $scope = $('main, .entry-content, article').first().length ? $('main, .entry-content, article').first() : $('body');
-  const mainText = cleanText($scope.text());
-
-  const sorteoMatch = mainText.match(/Sorteo\s*Nro\.?\s*(\d{4})/i) || mainText.match(/sorteo\s*N\.?[°º]?\s*(\d{4})/i);
-  if (!sorteoMatch) throw new Error('Loto 5 Salta: sorteo no encontrado');
-  const sorteo = Number(sorteoMatch[1]);
-  const fecha = parseFecha(mainText) || getFechaAR();
-
-  const pozoM = mainText.match(/PR[ÓO]XIMO POZO ESTIMADO:\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const combM = mainText.match(/Extracciones\s+([\d\s]+?)\s+Aciertos/i)
-    || mainText.match(/Combinaci[óo]n ganadora:\s*([\d\s\-]+)/i);
-  const bolillas = combM ? parseNumbersArray(combM[1].match(/\b\d{1,2}\b/g) || [], 0, 36, 5) : null;
-  if (!bolillas) throw new Error('Loto 5 Salta: sin bolillas');
-
-  const table = $scope.find('table').filter((_, t) => {
-    const k = normalizeKey($(t).text());
-    return k.includes('5 aciertos') && k.includes('ganadores');
-  }).last();
-
-  const premios = table.length ? parseTablePremios($, table) : [];
-  return {
-    draw: {
-      sorteo,
-      fecha,
-      modalidades: [{
-        nombre: 'Sorteo Tradicional (00 al 36)',
-        bolillas: bolillas.sort((a, b) => a - b),
-        premios
-      }]
-    },
-    pozoProximo,
-    source: 'loteriadesalta.com'
-  };
-}
-
-async function parseLoto5TuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/loto5.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('body').text());
-
-  const headerM = bodyText.match(/Loto 5 Plus\s*Sorteo:\s*(\d{4})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Loto 5 TuJugada: cabecera no encontrada');
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const start = bodyText.indexOf('NUMEROS GANADORES');
-  const end = bodyText.indexOf('PREMIOS DEL SORTEO', start);
-  const chunk = start >= 0 && end > start ? bodyText.slice(start, end) : '';
-  const bolillas = parseNumbersArray(chunk.match(/\b\d{1,2}\b/g) || [], 0, 36, 5);
-  if (!bolillas) throw new Error('Loto 5 TuJugada: sin bolillas');
-
-  const table = $('table').filter((_, t) => normalizeKey($(t).text()).includes('ganad')).first();
-  return {
-    draw: {
-      sorteo,
-      fecha,
-      modalidades: [{
-        nombre: 'Sorteo Tradicional (00 al 36)',
-        bolillas: bolillas.sort((a, b) => a - b),
-        premios: table.length ? parseTablePremios($, table) : []
-      }]
-    },
-    pozoProximo,
-    source: 'tujugada.com.ar'
-  };
-}
-
-async function parsePoceadaTuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/poceada.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('body').text());
-
-  const headerM = bodyText.match(/RESULTADO QUINIELA POCEADA\s*Nro:\s*(\d{4,5})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Poceada TuJugada: cabecera no encontrada');
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO POCEADA\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const start = bodyText.indexOf('NUMEROS GANADORES', bodyText.indexOf('RESULTADO QUINIELA POCEADA'));
-  const end = bodyText.indexOf('PREMIOS DEL SORTEO', start);
-  const chunk = start >= 0 && end > start ? bodyText.slice(start, end) : '';
-  const bolillas = parseNumbersArray(chunk.match(/\b\d{1,2}\b/g) || [], 0, 99, 20);
-  if (!bolillas) throw new Error('Poceada TuJugada: se esperaban 20 bolillas');
-
-  const table = $('table').filter((_, t) => {
-    const k = normalizeKey($(t).text());
-    return k.includes('cant') && k.includes('gan.');
-  }).first();
-
-  return {
-    draw: {
-      sorteo,
-      fecha,
-      modalidades: [{
-        nombre: 'Extracto de 20 números (00 al 99)',
-        bolillas: bolillas.sort((a, b) => a - b),
-        premios: table.length ? parseTablePremios($, table) : []
-      }]
-    },
-    pozoProximo,
-    source: 'tujugada.com.ar'
-  };
+async function parseLaNacionPoceado(gameKey, url, existingUltimo = null) {
+  const html = await fetchHtml(url);
+  return parseLaNacionPoceadoFromHtml(gameKey, html, existingUltimo);
 }
 
 async function parsePoceadaNotitimba() {
@@ -1011,95 +829,37 @@ async function parsePoceadaNotitimba() {
   };
 }
 
-async function parseQuinielaPlusTuJugada() {
-  const html = await fetchHtml('https://www.tujugada.com.ar/quiniela-plus.asp');
-  const $ = cheerio.load(html);
-  const bodyText = cleanText($('body').text());
-
-  const headerM = bodyText.match(/RESULTADO QUINIELA PLUS\s*Nro:\s*(\d{4,6})\s*-\s*(\d{1,2}\/\d{1,2}\/20\d{2})/i);
-  if (!headerM) throw new Error('Quiniela Plus TuJugada: cabecera no encontrada');
-  const sorteo = Number(headerM[1]);
-  const fecha = parseFecha(headerM[2]) || getFechaAR();
-
-  const pozoM = bodyText.match(/PROXIMO POZO QUINIELA PLUS\s*(\$\s*[\d.,]+)/i);
-  const pozoProximo = pozoM ? formatMoney(pozoM[1]) : null;
-
-  const MODS = [
-    { marker: 'RESULTADO QUINIELA PLUS', nombre: 'Quiniela Plus (Tradicional)' },
-    { marker: 'RESULTADO SUPER PLUS', nombre: 'Super Plus' },
-    { marker: 'RESULTADO CHANCE PLUS', nombre: 'Chance Plus' }
-  ];
-
-  const premioTables = $('table').filter((_, t) => {
-    const k = normalizeKey($(t).text());
-    return k.includes('cant') && k.includes('gan.');
-  }).toArray();
-
-  // En TuJugada las 3 grillas tienen su bloque "NUMEROS GANADORES ... PREMIOS DEL SORTEO"
-  const modalidades = [];
-  for (let i = 0; i < MODS.length; i++) {
-    const m = MODS[i];
-    const mIdx = bodyText.indexOf(m.marker);
-    if (mIdx === -1) continue;
-    const numStart = bodyText.indexOf('NUMEROS GANADORES', mIdx);
-    const numEnd = bodyText.indexOf('PREMIOS DEL SORTEO', numStart);
-    if (numStart === -1 || numEnd === -1) continue;
-    const chunk = bodyText.slice(numStart, numEnd);
-    const bolillas = parseNumbersArray(chunk.match(/\b\d{1,2}\b/g) || [], 0, 99, 20);
-    if (!bolillas) continue;
-
-    // Asociar la tabla de premios correcta (Super Plus a veces solo muestra 7 aciertos, Chance Plus 8..5)
-    let premios = [];
-    if (premioTables[i]) {
-      premios = parseTablePremios($, $(premioTables[i]));
-    }
-    // En TuJugada a veces la tabla de Chance Plus precede en orden DOM a Super Plus o viceversa;
-    // validamos contra el texto posterior a PREMIOS DEL SORTEO
-    const nextMarkerIdx = i + 1 < MODS.length ? bodyText.indexOf(MODS[i + 1].marker, numEnd) : bodyText.indexOf('Controlar Jugadas', numEnd);
-    const afterText = bodyText.slice(numEnd, nextMarkerIdx > numEnd ? nextMarkerIdx : numEnd + 400);
-    const textPremios = [];
-    const rowRe = /\b(8|7|6|5)\s+(Vac\.?|Vacante|\d+)\s+(\$\s*[\d.,]+)/gi;
-    let rm;
-    while ((rm = rowRe.exec(afterText)) !== null) {
-      const g = normalizeGanadores(rm[2]);
-      const money = formatMoney(rm[3]);
-      textPremios.push({
-        aciertos: `${rm[1]} aciertos`,
-        ganadores: g,
-        pozo: money || 'A confirmar',
-        premioIndividual: g === 'Vacante' ? 'Vacante' : (money || 'A confirmar')
-      });
-    }
-
-    modalidades.push({
-      nombre: m.nombre,
-      bolillas: bolillas.sort((a, b) => a - b),
-      premios: textPremios.length ? textPremios : premios
-    });
-  }
-
-  if (modalidades.length === 0) throw new Error('Quiniela Plus TuJugada: sin modalidades');
-  return { draw: { sorteo, fecha, modalidades }, pozoProximo, source: 'tujugada.com.ar' };
-}
-
 // ============================================================================
-// PARSERS DE QUINIELAS (Todas las 7 provincias desde TuJugada)
+// PARSERS DE QUINIELAS (Primario: La Nación JSON / Loterías Mundiales + Respaldo)
 // ============================================================================
 
-const QUINIELAS_SOURCES = {
+const QUINIELAS_CONFIG = {
   ciudad: {
-    url: 'https://www.tujugada.com.ar/quiniela-nacional.asp',
+    laNacionUrl: 'https://www.lanacion.com.ar/loterias/quiniela-nacional/',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/nacional',
+      'https://www.loteriasmundiales.com.ar/Quinielas/ciudad',
+      'https://www.loteriasmundiales.com.ar/Quinielas/entre-rios'
+    ],
     hasLetras: true,
+    provMatchRe: /\b(ciudad|nacional|caba|capital)\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
+      primero: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
       matutina: { key: 'matutina', nombre: 'Matutina', hora: '15:00' },
       vespertina: { key: 'vespertina', nombre: 'Vespertina', hora: '18:00' },
       nocturna: { key: 'nocturna', nombre: 'Nocturna', hora: '21:00' }
     }
   },
   provincia: {
-    url: 'https://www.tujugada.com.ar/quiniela_provincia_buenos_aires.asp',
+    laNacionUrl: 'https://www.lanacion.com.ar/loterias/quiniela-provincia/',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/buenos-aires',
+      'https://www.loteriasmundiales.com.ar/Quinielas/provincia',
+      'https://www.loteriasmundiales.com.ar/Quinielas/entre-rios'
+    ],
+    provMatchRe: /\b(buenos\s*aires|provincia|pba)\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primero', nombre: 'El Primero', hora: '12:00' },
@@ -1110,20 +870,32 @@ const QUINIELAS_SOURCES = {
     }
   },
   santafe: {
-    url: 'https://www.tujugada.com.ar/quiniela_santa_fe.asp',
+    laNacionUrl: 'https://www.lanacion.com.ar/loterias/quiniela-santa-fe/',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/santa-fe',
+      'https://www.loteriasmundiales.com.ar/Quinielas/entre-rios'
+    ],
+    provMatchRe: /\bsanta\s*fe\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
+      primero: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
       matutina: { key: 'matutina', nombre: 'Matutina', hora: '15:00' },
       vespertina: { key: 'vespertina', nombre: 'Vespertina', hora: '18:00' },
       nocturna: { key: 'nocturna', nombre: 'Nocturna', hora: '21:00' }
     }
   },
   cordoba: {
-    url: 'https://www.tujugada.com.ar/quiniela_cordoba.asp',
+    laNacionUrl: 'https://www.lanacion.com.ar/loterias/quiniela-cordoba/',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/cordoba',
+      'https://www.loteriasmundiales.com.ar/Quinielas/entre-rios'
+    ],
+    provMatchRe: /\bcordoba\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
+      primero: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
       matutina: { key: 'matutina', nombre: 'Matutina', hora: '15:00' },
       vespertina: { key: 'vespertina', nombre: 'Vespertina', hora: '18:00' },
       nocturna: { key: 'nocturna', nombre: 'Nocturna', hora: '21:00' },
@@ -1131,10 +903,14 @@ const QUINIELAS_SOURCES = {
     }
   },
   entrerios: {
-    url: 'https://www.tujugada.com.ar/quiniela_entre_rios.asp',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/entre-rios'
+    ],
+    provMatchRe: /\bentre\s*rios\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
+      primero: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
       matutina: { key: 'matutina', nombre: 'Matutina', hora: '15:00' },
       vespertina: { key: 'vespertina', nombre: 'Vespertina', hora: '18:00' },
       nocturna: { key: 'nocturna', nombre: 'Nocturna', hora: '21:00' },
@@ -1142,7 +918,10 @@ const QUINIELAS_SOURCES = {
     }
   },
   mendoza: {
-    url: 'https://www.tujugada.com.ar/quiniela_mendoza.asp',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/mendoza'
+    ],
+    provMatchRe: /\bmendoza\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
@@ -1152,10 +931,14 @@ const QUINIELAS_SOURCES = {
     }
   },
   corrientes: {
-    url: 'https://www.tujugada.com.ar/quiniela_correntina.asp',
+    loteriasMundialesUrls: [
+      'https://www.loteriasmundiales.com.ar/Quinielas/correntina'
+    ],
+    provMatchRe: /\b(correntina|corrientes)\b/i,
     turnosMap: {
       previa: { key: 'previa', nombre: 'La Previa', hora: '10:15' },
       primera: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
+      primero: { key: 'primera', nombre: 'La Primera', hora: '12:00' },
       matutina: { key: 'matutina', nombre: 'Matutina', hora: '15:00' },
       vespertina: { key: 'vespertina', nombre: 'Vespertina', hora: '18:00' },
       nocturna: { key: 'nocturna', nombre: 'Nocturna', hora: '21:00' }
@@ -1163,93 +946,24 @@ const QUINIELAS_SOURCES = {
   }
 };
 
-function parseTuJugadaQuinielaTable($, $tbl) {
-  const byPos = new Map();
-  $tbl.find('tr').each((_, tr) => {
-    const cells = $(tr).find('td, th').map((__, td) => stripTuJugadaHidden($, $(td))).get();
-    // Las tablas de TuJugada tienen 4 columnas: [Ubic, NUMERO, Ubic, NUMERO]
-    for (let i = 0; i + 1 < cells.length; i += 2) {
-      const posM = cells[i].match(/^\d{1,2}$/);
-      if (!posM) continue;
-      const pos = Number(posM[0]);
-      if (pos < 1 || pos > 20) continue;
-      const numM = cells[i + 1].match(/\b(\d{4,5})\b/);
-      if (!numM) continue;
-      const val4 = numM[1].slice(-4);
-      byPos.set(pos, val4);
-    }
-  });
-  if (byPos.size !== 20) return null;
-  const extracto = [];
-  for (let p = 1; p <= 20; p++) {
-    const v = byPos.get(p);
-    if (!v || !/^\d{4}$/.test(v)) return null;
-    extracto.push(v);
+function normalizeQuinielaExtracto(results) {
+  if (!Array.isArray(results) || results.length !== 20) return null;
+  const out = [];
+  for (const raw of results) {
+    const digits = String(raw ?? '').replace(/\D/g, '');
+    if (!digits) return null;
+    const val4 = digits.slice(-4).padStart(4, '0');
+    if (!/^\d{4}$/.test(val4)) return null;
+    out.push(val4);
   }
-  return extracto;
+  if (out.every(v => v === '0000')) return null;
+  return out;
 }
 
-async function updateQuinielaFromTuJugada(provKey, data) {
-  const cfg = QUINIELAS_SOURCES[provKey];
-  const prov = data.quinielas[provKey];
-  if (!cfg || !prov) return { updated: false, info: 'sin config' };
-
-  const html = await fetchHtml(cfg.url);
-  const $ = cheerio.load(html);
-
-  const parsedTurnos = [];
-
-  $('table').each((_, tbl) => {
-    const $tbl = $(tbl);
-    const tblHeader = normalizeKey($tbl.find('tr').first().text());
-    if (!tblHeader.includes('ubic') && !tblHeader.includes('numero')) return;
-
-    const extracto = parseTuJugadaQuinielaTable($, $tbl);
-    if (!extracto) return;
-
-    // Buscar el encabezado de fecha + turno inmediatamente anterior a la tabla
-    const contextParts = [];
-    const $prev = $tbl.prevAll();
-    for (let i = 0; i < Math.min(6, $prev.length); i++) {
-      contextParts.unshift(stripTuJugadaHidden($, $prev.eq(i)));
-    }
-    if (contextParts.join(' ').length < 15) {
-      contextParts.unshift(stripTuJugadaHidden($, $tbl.parent()));
-    }
-    const ctx = contextParts.join(' ');
-
-    const fecha = parseFecha(ctx);
-    if (!fecha) return;
-
-    const turnoRegex = /\b(previa|primera|primero|matutina|vespertina|nocturna|turista)\b/i;
-    const turnoM = ctx.match(turnoRegex);
-    if (!turnoM) return;
-
-    const turnoRawKey = turnoM[1].toLowerCase();
-    const spec = cfg.turnosMap[turnoRawKey];
-    if (!spec) return;
-
-    // Letras para Ciudad (ej. "Letras: AUBS")
-    let letras;
-    if (cfg.hasLetras) {
-      const afterText = stripTuJugadaHidden($, $tbl.nextAll().slice(0, 2));
-      const letrasM = (ctx + ' ' + afterText).match(/Letras:\s*([A-Z]{4}|[A-Z](?:-[A-Z]){3})/i);
-      if (letrasM) {
-        letras = letrasM[1].toUpperCase().includes('-')
-          ? letrasM[1].toUpperCase()
-          : letrasM[1].toUpperCase().split('').join('-');
-      }
-    }
-
-    parsedTurnos.push({ fecha, spec, extracto, letras });
-  });
-
-  if (parsedTurnos.length === 0) {
-    throw new Error(`TuJugada ${provKey}: 0 extractos válidos encontrados`);
-  }
-
+function mergeQuinielaTurnos(prov, parsedTurnos) {
   let updated = false;
   for (const item of parsedTurnos) {
+    if (!isValidIsoDate(item.fecha)) continue;
     prov.fechas[item.fecha] = prov.fechas[item.fecha] || {};
     const existing = prov.fechas[item.fecha][item.spec.key];
     const nextTurno = {
@@ -1283,7 +997,239 @@ async function updateQuinielaFromTuJugada(provKey, data) {
   return { updated, info: `fecha=${lastDate} turnos=[${lastTurnos}] (${parsedTurnos.length} extractos)` };
 }
 
-// --- Ejecución con fallback por cada poceado ---
+function parseQuinielaFromLaNacionHtml(provKey, html) {
+  const cfg = QUINIELAS_CONFIG[provKey];
+  if (!cfg) throw new Error(`Configuración de quiniela inexistente para ${provKey}`);
+
+  const json = extractLaNacionJson(html);
+  const details = Array.isArray(json?.dataService?.lotteryDetail) ? json.dataService.lotteryDetail : [];
+  if (details.length === 0) {
+    throw new Error(`La Nación ${provKey}: lotteryDetail vacío`);
+  }
+
+  const fallbackYear = Number(getFechaAR().slice(0, 4));
+  const parsedTurnos = [];
+
+  for (const item of details) {
+    const fecha = parseFecha(item?.date, fallbackYear);
+    if (!fecha) continue;
+
+    const turnoNorm = normalizeKey(item?.name || '');
+    const turnoM = turnoNorm.match(/\b(previa|primera|primero|matutina|vespertina|nocturna|turista)\b/);
+    if (!turnoM) continue;
+
+    const spec = cfg.turnosMap[turnoM[1]];
+    if (!spec) continue;
+
+    const extracto = normalizeQuinielaExtracto(item?.results);
+    if (!extracto) continue;
+
+    let letras;
+    if (cfg.hasLetras && Array.isArray(item?.letters) && item.letters[0]) {
+      const cleanLetras = String(item.letters[0]).replace(/[^a-zA-Z]/g, '').toUpperCase();
+      if (cleanLetras.length === 4) {
+        letras = cleanLetras.split('').join('-');
+      }
+    }
+
+    parsedTurnos.push({ fecha, spec, extracto, letras });
+  }
+
+  if (parsedTurnos.length === 0) {
+    throw new Error(`La Nación ${provKey}: 0 extractos válidos encontrados`);
+  }
+
+  return parsedTurnos;
+}
+
+async function updateQuinielaFromLaNacion(provKey, url, data) {
+  const prov = data.quinielas[provKey];
+  if (!prov) return { updated: false, info: 'sin provincia en resultados.json' };
+  const html = await fetchHtml(url);
+  const parsedTurnos = parseQuinielaFromLaNacionHtml(provKey, html);
+  return mergeQuinielaTurnos(prov, parsedTurnos);
+}
+
+function parseLoteriasMundialesTable($, $tbl) {
+  const byPos = new Map();
+  $tbl.find('tr').each((_, tr) => {
+    const cells = $(tr).find('td, th').map((__, td) => cleanText($(td).text())).get();
+    if (cells.length < 2) return;
+    for (let i = 0; i + 1 < cells.length; i += 2) {
+      const posM = cells[i].match(/^(\d{1,2})[°º.]?$/);
+      if (!posM) continue;
+      const pos = Number(posM[1]);
+      if (pos < 1 || pos > 20) continue;
+      const numCell = cells[i + 1];
+      const numM = numCell.match(/^(\d{1,5})$/) || numCell.match(/\b(\d{4,5})\b/);
+      if (!numM) continue;
+      const val4 = numM[1].slice(-4).padStart(4, '0');
+      if (!/^\d{4}$/.test(val4)) continue;
+      byPos.set(pos, val4);
+    }
+  });
+  if (byPos.size !== 20) return null;
+  const extracto = [];
+  for (let p = 1; p <= 20; p++) {
+    const v = byPos.get(p);
+    if (!v || !/^\d{4}$/.test(v)) return null;
+    extracto.push(v);
+  }
+  if (extracto.every(v => v === '0000')) return null;
+  return extracto;
+}
+
+function getTableImmediateHeader($, $tbl) {
+  const parts = [];
+  const cap = cleanText($tbl.find('caption').text());
+  if (cap) parts.push(cap);
+
+  $tbl.find('tr').slice(0, 3).each((_, tr) => {
+    const cells = $(tr).find('th, td').map((__, el) => cleanText($(el).text())).get();
+    if (!cells.length) return;
+    const isDataRow = cells.length >= 2 && /^\d{1,2}[°º.]?$/.test(cells[0]) && /^\d{1,5}$/.test(cells[1]);
+    if (!isDataRow) {
+      parts.push(cells.join(' '));
+    }
+  });
+
+  let $node = $tbl;
+  for (let depth = 0; depth < 3; depth++) {
+    const $prevs = $node.prevAll();
+    for (let i = 0; i < Math.min(5, $prevs.length); i++) {
+      const $p = $prevs.eq(i);
+      if ($p.is('table') || $p.find('table').length > 0) break;
+      const t = cleanText($p.text());
+      if (t) parts.unshift(t);
+    }
+    const $parent = $node.parent();
+    if (!$parent.length || $parent.is('body, html')) break;
+    if ($parent.find('table').length === 1) {
+      const ownText = cleanText($parent.clone().find('table').remove().end().text());
+      if (ownText && !parts.some(p => p.includes(ownText))) {
+        parts.unshift(ownText);
+      }
+      $node = $parent;
+    } else {
+      break;
+    }
+  }
+
+  return cleanText(parts.join(' | '));
+}
+
+function resolveLoteriasMundialesTurno(provKey, headerText) {
+  const cfg = QUINIELAS_CONFIG[provKey];
+  if (!cfg) return null;
+  const k = normalizeKey(headerText);
+
+  if (provKey === 'mendoza') {
+    if (/\b(la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa;
+    if (/\bde\s+la\s+tarde\b/.test(k) || /\btarde\b/.test(k) || /\b17[:.,]30\b/.test(k) || /\b18[:.,]00\b/.test(k)) return cfg.turnosMap.vespertina;
+    if (/\bvespertina\b/.test(k) || /\b14[:.,]00\b/.test(k) || /\b15[:.,]00\b/.test(k)) return cfg.turnosMap.matutina;
+    if (/\bmatutina\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k) || /\bprimera\b/.test(k) || /\b1[aª]\.?\s+de\s+la\s+manana\b/.test(k)) return cfg.turnosMap.primera;
+    if (/\bnocturna\b/.test(k) || /\b21[:.,]00\b/.test(k)) return cfg.turnosMap.nocturna;
+    return null;
+  }
+
+  if (/\b(la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa || null;
+  if (/\b1[aª°]?\.?\s+de\s+la\s+manana\b/.test(k) || /\b(primera|primero)\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k)) {
+    return cfg.turnosMap.primera || cfg.turnosMap.primero || null;
+  }
+  if (/\bmatutina\b/.test(k) || /\b14[:.,]00\b/.test(k) || /\b15[:.,]00\b/.test(k)) return cfg.turnosMap.matutina || null;
+  if (/\bvespertina\b/.test(k) || /\b17[:.,]30\b/.test(k) || /\b18[:.,]00\b/.test(k)) return cfg.turnosMap.vespertina || null;
+  if (/\bnocturna\b/.test(k) || /\b21[:.,]00\b/.test(k)) return cfg.turnosMap.nocturna || null;
+  if (/\bturista\b/.test(k) || /\b22[:.,]15\b/.test(k)) return cfg.turnosMap.turista || null;
+
+  return null;
+}
+
+function getSectionFallbackTurnoText($, $tbl) {
+  let $cur = $tbl;
+  for (let depth = 0; depth < 4; depth++) {
+    const $parent = $cur.parent();
+    if (!$parent.length || $parent.is('body, html')) break;
+    const $prevHeading = $cur.prevAll('h1, h2, h3, h4, h5, .card-header, .panel-heading, strong, p, div').first();
+    if ($prevHeading.length && $prevHeading.find('table').length === 0) {
+      const txt = cleanText($prevHeading.text());
+      if (txt) return txt;
+    }
+    $cur = $parent;
+  }
+  return '';
+}
+
+function parseQuinielaFromLoteriasMundialesHtml(provKey, html) {
+  const cfg = QUINIELAS_CONFIG[provKey];
+  if (!cfg) throw new Error(`Configuración de quiniela inexistente para ${provKey}`);
+
+  const $ = cheerio.load(html);
+  const $bodyClone = $('body').clone();
+  $bodyClone.find('script, style, noscript').remove();
+  const bodyText = cleanText($bodyClone.text());
+
+  const dateHeaderM = bodyText.match(/Resultados\s+del\s+d[íi]a\s+([^.|]{6,60})/i);
+  const pageFecha = (dateHeaderM && parseFecha(dateHeaderM[1]))
+    || parseFecha($('h1, h2').text())
+    || parseFecha(bodyText);
+
+  const parsedTurnos = [];
+
+  $('table').each((_, tbl) => {
+    const $tbl = $(tbl);
+    if ($tbl.find('table').length > 0) return; // Ignorar tablas contenedoras
+
+    const extracto = parseLoteriasMundialesTable($, $tbl);
+    if (!extracto) return;
+
+    const immediateHeader = getTableImmediateHeader($, $tbl);
+    const normHeader = normalizeKey(immediateHeader);
+
+    // Filtrar estrictamente que el encabezado inmediato pertenezca a la provincia buscada
+    if (!cfg.provMatchRe.test(normHeader)) return;
+
+    let spec = resolveLoteriasMundialesTurno(provKey, immediateHeader);
+    if (!spec) {
+      const fallbackCtx = getSectionFallbackTurnoText($, $tbl);
+      if (fallbackCtx) {
+        spec = resolveLoteriasMundialesTurno(provKey, fallbackCtx);
+      }
+    }
+    if (!spec) return;
+
+    const fecha = parseFecha(immediateHeader) || pageFecha;
+    if (!fecha) return;
+
+    let letras;
+    if (cfg.hasLetras) {
+      const afterText = cleanText($tbl.nextAll().slice(0, 2).text());
+      const letrasM = (immediateHeader + ' ' + afterText).match(/Letras[:\s]*([A-Z]{4}|[A-Z](?:-[A-Z]){3})\b/i);
+      if (letrasM) {
+        letras = letrasM[1].toUpperCase().includes('-')
+          ? letrasM[1].toUpperCase()
+          : letrasM[1].toUpperCase().split('').join('-');
+      }
+    }
+
+    parsedTurnos.push({ fecha, spec, extracto, letras });
+  });
+
+  if (parsedTurnos.length === 0) {
+    throw new Error(`Loterías Mundiales ${provKey}: 0 extractos válidos encontrados`);
+  }
+
+  return parsedTurnos;
+}
+
+async function updateQuinielaFromLoteriasMundiales(provKey, url, data) {
+  const prov = data.quinielas[provKey];
+  if (!prov) return { updated: false, info: 'sin provincia en resultados.json' };
+  const html = await fetchHtml(url);
+  const parsedTurnos = parseQuinielaFromLoteriasMundialesHtml(provKey, html);
+  return mergeQuinielaTurnos(prov, parsedTurnos);
+}
+
+// --- Ejecución con fallback por cada poceado y quiniela ---
 
 async function runWithFallbacks(gameKey, data, parsers) {
   const errors = [];
@@ -1301,6 +1247,31 @@ async function runWithFallbacks(gameKey, data, parsers) {
   return false;
 }
 
+async function runQuinielaWithFallbacks(provKey, data) {
+  const cfg = QUINIELAS_CONFIG[provKey];
+  const attempts = [];
+
+  if (cfg.laNacionUrl) {
+    attempts.push(['lanacion', () => updateQuinielaFromLaNacion(provKey, cfg.laNacionUrl, data)]);
+  }
+  for (const lmUrl of cfg.loteriasMundialesUrls || []) {
+    attempts.push([`loteriasmundiales(${lmUrl.split('/').pop()})`, () => updateQuinielaFromLoteriasMundiales(provKey, lmUrl, data)]);
+  }
+
+  const errors = [];
+  for (const [label, fn] of attempts) {
+    try {
+      const res = await fn();
+      console.log(`[${res.updated ? 'ACTUALIZADO' : 'SIN CAMBIOS'}] quiniela:${provKey} | fuente=${label} | ${res.info}`);
+      return res.updated;
+    } catch (err) {
+      errors.push(`${label}: ${err.message}`);
+    }
+  }
+  console.warn(`[AVISO] quiniela:${provKey} falló en todas las fuentes -> ${errors.join(' | ')}`);
+  return false;
+}
+
 async function main() {
   const raw = await fs.readFile(RESULTADOS_PATH, 'utf-8');
   const data = JSON.parse(raw);
@@ -1308,31 +1279,26 @@ async function main() {
 
   const poceadoTasks = [
     ['quini6', [
-      ['loteriadesalta', parseQuini6Salta],
-      ['tujugada', parseQuini6TuJugada]
+      ['lanacion', () => parseLaNacionPoceado('quini6', LA_NACION_POCEADOS.quini6.url, data.poceados.quini6?.ultimo)]
     ]],
     ['lotoPlus', [
-      ['loteriadesalta', parseLotoPlusSalta],
-      ['tujugada', parseLotoPlusTuJugada]
-    ]],
-    ['brinco', [
-      ['loteriadesalta', parseBrincoSalta],
-      ['tujugada', parseBrincoTuJugada]
+      ['lanacion', () => parseLaNacionPoceado('lotoPlus', LA_NACION_POCEADOS.lotoPlus.url, data.poceados.lotoPlus?.ultimo)]
     ]],
     ['telekino', [
-      ['loteriadesalta', parseTelekinoSalta],
-      ['tujugada', parseTelekinoTuJugada]
+      ['lanacion', () => parseLaNacionPoceado('telekino', LA_NACION_POCEADOS.telekino.url, data.poceados.telekino?.ultimo)]
+    ]],
+    ['brinco', [
+      ['lanacion', () => parseLaNacionPoceado('brinco', LA_NACION_POCEADOS.brinco.url, data.poceados.brinco?.ultimo)]
     ]],
     ['loto5', [
-      ['loteriadesalta', parseLoto5Salta],
-      ['tujugada', parseLoto5TuJugada]
+      ['lanacion', () => parseLaNacionPoceado('loto5', LA_NACION_POCEADOS.loto5.url, data.poceados.loto5?.ultimo)]
     ]],
     ['laPoceada', [
-      ['tujugada', parsePoceadaTuJugada],
+      ['lanacion', () => parseLaNacionPoceado('laPoceada', LA_NACION_POCEADOS.laPoceada.url, data.poceados.laPoceada?.ultimo)],
       ['notitimba', parsePoceadaNotitimba]
     ]],
     ['quinielaPlus', [
-      ['tujugada', parseQuinielaPlusTuJugada]
+      ['lanacion', () => parseLaNacionPoceado('quinielaPlus', LA_NACION_POCEADOS.quinielaPlus.url, data.poceados.quinielaPlus?.ultimo)]
     ]]
   ];
 
@@ -1340,13 +1306,8 @@ async function main() {
     await runWithFallbacks(gameKey, data, parsers);
   }
 
-  for (const provKey of Object.keys(QUINIELAS_SOURCES)) {
-    try {
-      const res = await updateQuinielaFromTuJugada(provKey, data);
-      console.log(`[${res.updated ? 'ACTUALIZADO' : 'SIN CAMBIOS'}] quiniela:${provKey} | fuente=tujugada | ${res.info}`);
-    } catch (err) {
-      console.warn(`[AVISO] quiniela:${provKey} falló -> ${err.message}`);
-    }
+  for (const provKey of Object.keys(QUINIELAS_CONFIG)) {
+    await runQuinielaWithFallbacks(provKey, data);
   }
 
   const afterSnapshot = JSON.stringify({ poceados: data.poceados, quinielas: data.quinielas });
@@ -1362,7 +1323,19 @@ async function main() {
   console.log(`Guardado resultados.json (${data.actualizadoEl}).`);
 }
 
-main().catch((err) => {
-  console.error('Error fatal en actualizador:', err);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === `file://${path.resolve(process.argv[1])}`) {
+  main().catch((err) => {
+    console.error('Error fatal en actualizador:', err);
+    process.exit(1);
+  });
+}
+
+export {
+  extractLaNacionJson,
+  parseLaNacionPoceadoFromHtml,
+  parseQuinielaFromLaNacionHtml,
+  parseQuinielaFromLoteriasMundialesHtml,
+  mergeQuinielaTurnos,
+  archiveIfNewDraw
+};
+
