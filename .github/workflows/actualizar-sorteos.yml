@@ -50,7 +50,41 @@ jobs:
           fi
 
       - name: Consultar fuentes oficiales y actualizar resultados.json
-        run: npm run actualizar
+        run: |
+          npm run actualizar 2>&1 | tee /tmp/scraper.log
+          node -e '
+            const urls = [
+              "https://www.tujugada.com.ar/quiniela-nacional.asp",
+              "https://www.tujugada.com.ar/quiniela_provincia_buenos_aires.asp",
+              "https://www.lanacion.com.ar/loterias/quiniela-nacional/",
+              "https://www.notitimba.com/lots/",
+              "https://www.loteriadesalta.com/resultados-oficiales/quini-6/"
+            ];
+            (async () => {
+              for (const u of urls) {
+                try {
+                  const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" } });
+                  const t = await r.text();
+                  console.log("DIAG", u, "status=" + r.status, "len=" + t.length, "has26=" + /26\/11\/2026/.test(t));
+                  if (u.includes("quiniela-nacional.asp")) {
+                    const idx = t.indexOf("26/11/2026");
+                    console.log("TUJUGADA_SNIPPET:", t.slice(Math.max(0, idx - 150), idx + 600).replace(/\s+/g, " "));
+                  }
+                } catch (e) {
+                  console.log("DIAG_ERR", u, e.message);
+                }
+              }
+            })();
+          ' 2>&1 | tee -a /tmp/scraper.log
+          TMP_DBG=$(mktemp -d)
+          git worktree add --orphan -b debug-log "$TMP_DBG"
+          cp /tmp/scraper.log "$TMP_DBG/scraper.log"
+          git -C "$TMP_DBG" config user.name "github-actions[bot]"
+          git -C "$TMP_DBG" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C "$TMP_DBG" add scraper.log
+          git -C "$TMP_DBG" commit -m "debug: scraper log"
+          git -C "$TMP_DBG" push --force origin debug-log
+          git worktree remove --force "$TMP_DBG"
 
       - name: Publicar cambios únicamente en rama datos (0 deploys en Netlify)
         run: |
