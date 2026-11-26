@@ -4,16 +4,44 @@ import { SUENOS, SUENOS_MAP } from '/suenos-data.js';
 initTheme();
 
 const ORDER = ['ciudad', 'provincia', 'santafe', 'cordoba', 'entrerios', 'mendoza', 'corrientes'];
+const TURNO_ORDER = ['previa', 'primera', 'primero', 'matutina', 'vespertina', 'nocturna', 'turista'];
+
 let data = null;
 let currentProv = 'ciudad';
 let currentFecha = null;
 let currentTurno = null;
 
+function sortTurnos(keys) {
+  return [...keys].sort((a, b) => {
+    const ia = TURNO_ORDER.indexOf(a);
+    const ib = TURNO_ORDER.indexOf(b);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+}
+
+function getLatestPublishedTurno(turnosObj) {
+  const keys = sortTurnos(Object.keys(turnosObj || {}));
+  for (let i = keys.length - 1; i >= 0; i--) {
+    const k = keys[i];
+    if (Array.isArray(turnosObj[k]?.extracto) && turnosObj[k].extracto.length > 0) {
+      return k;
+    }
+  }
+  return keys[0] || null;
+}
+
 async function boot() {
-  data = await fetchResultados();
-  renderProvPills();
-  selectProvince('ciudad');
   initSuenosSearch();
+  try {
+    data = await fetchResultados();
+    renderProvPills();
+    selectProvince('ciudad');
+  } catch (err) {
+    const root = document.getElementById('quiniela-root');
+    if (root) {
+      root.innerHTML = `<div class="card">No se pudieron cargar los extractos de quinielas. Verificá tu conexión o reintentá en unos segundos.</div>`;
+    }
+  }
 }
 
 function renderProvPills() {
@@ -21,6 +49,7 @@ function renderProvPills() {
   if (!wrap) return;
   wrap.innerHTML = ORDER.map(key => {
     const p = data.quinielas[key];
+    if (!p) return '';
     return `<button class="game-pill ${key === currentProv ? 'active' : ''}" data-prov="${key}">${p.nombre}</button>`;
   }).join('');
 
@@ -32,20 +61,37 @@ function renderProvPills() {
 function selectProvince(provKey) {
   currentProv = provKey;
   const prov = data.quinielas[provKey];
-  const fechas = Object.keys(prov.fechas).sort().reverse();
+  const fechas = Object.keys(prov?.fechas || {}).sort().reverse();
+  if (fechas.length === 0) {
+    currentFecha = null;
+    currentTurno = null;
+    renderProvPills();
+    renderQuiniela();
+    return;
+  }
   currentFecha = fechas[0];
-  const turnos = Object.keys(prov.fechas[currentFecha]);
-  currentTurno = turnos.find(t => (prov.fechas[currentFecha][t].extracto || []).length > 0) || turnos[0];
+  currentTurno = getLatestPublishedTurno(prov.fechas[currentFecha]);
   renderProvPills();
   renderQuiniela();
 }
 
 function renderQuiniela() {
   const root = document.getElementById('quiniela-root');
+  if (!root) return;
   const prov = data.quinielas[currentProv];
-  const fechas = Object.keys(prov.fechas).sort().reverse();
-  const turnosObj = prov.fechas[currentFecha];
-  const turnoKeys = Object.keys(turnosObj);
+  const fechas = Object.keys(prov?.fechas || {}).sort().reverse();
+
+  if (fechas.length === 0 || !currentFecha || !prov.fechas[currentFecha]) {
+    root.innerHTML = `<div class="card"><p style="margin:0;color:var(--muted);">No hay extractos disponibles por el momento para <strong>${prov?.nombre || currentProv}</strong>.</p></div>`;
+    return;
+  }
+
+  const turnosObj = prov.fechas[currentFecha] || {};
+  const turnoKeys = sortTurnos(Object.keys(turnosObj));
+  if (turnoKeys.length === 0) {
+    root.innerHTML = `<div class="card"><p style="margin:0;color:var(--muted);">No hay turnos cargados para la fecha seleccionada.</p></div>`;
+    return;
+  }
   const turno = turnosObj[currentTurno] || turnosObj[turnoKeys[0]];
 
   const fechaOpts = fechas.map(f => `<option value="${f}" ${f === currentFecha ? 'selected' : ''}>${formatFechaAR(f)}</option>`).join('');
@@ -59,8 +105,8 @@ function renderQuiniela() {
   if (extracto.length === 0) {
     bodyHtml = `<div class="card"><p style="margin:0;color:var(--muted);">El sorteo <strong>${turno.nombre} (${turno.hora} hs)</strong> todavía está pendiente de publicación oficial.</p></div>`;
   } else {
-    const cabeza = extracto[0];
-    const dosCifras = cabeza.slice(-2);
+    const cabeza = String(extracto[0] ?? '0000');
+    const dosCifras = cabeza.padStart(2, '0').slice(-2);
     const sueno = SUENOS_MAP[dosCifras] || '';
     const letrasHtml = turno.letras ? `<span class="badge badge-info">Letras: ${turno.letras}</span>` : '';
 
@@ -105,8 +151,7 @@ function renderQuiniela() {
 
   document.getElementById('fecha-select')?.addEventListener('change', (e) => {
     currentFecha = e.target.value;
-    const tKeys = Object.keys(prov.fechas[currentFecha]);
-    currentTurno = tKeys[0];
+    currentTurno = getLatestPublishedTurno(prov.fechas[currentFecha]);
     renderQuiniela();
   });
   root.querySelectorAll('button[data-turno]').forEach(btn => {

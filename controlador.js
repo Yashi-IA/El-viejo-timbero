@@ -1,6 +1,5 @@
-import { initTheme, fetchResultados, formatFechaAR, pad2 } from '/common.js';
+import { initTheme, fetchResultados, formatFechaAR, pad2, showToast } from '/common.js';
 import { saveJugada } from '/storage.js';
-import { showToast } from '/common.js';
 
 initTheme();
 
@@ -17,10 +16,96 @@ const GAME_CONFIG = {
   quinielas: { count: 1, min: 0, max: 9999, hint: 'Ingresá tu número apostado (1 a 4 cifras) y elegí jurisdicción.' }
 };
 
-async function boot() {
-  data = await fetchResultados();
-  const gameSel = document.getElementById('ctrl-juego');
+function getPoceadoDraws(gameKey) {
+  const game = data?.poceados?.[gameKey];
+  if (!game) return [];
+  const raw = [game.ultimo, ...(game.historico || [])].filter(d => d && d.sorteo);
+  const seen = new Set();
+  const list = [];
+  for (const d of raw) {
+    const s = Number(d.sorteo);
+    if (seen.has(s)) continue;
+    seen.add(s);
+    list.push(d);
+  }
+  return list.sort((a, b) => Number(b.sorteo) - Number(a.sorteo));
+}
+
+function populateDrawSelectors() {
+  const g = document.getElementById('ctrl-juego')?.value;
+  const sorteoWrap = document.getElementById('ctrl-sorteo-wrap');
+  const sorteoSel = document.getElementById('ctrl-sorteo');
   const provWrap = document.getElementById('ctrl-prov-wrap');
+  const provSel = document.getElementById('ctrl-prov');
+  const fechaWrap = document.getElementById('ctrl-fecha-wrap');
+  const fechaSel = document.getElementById('ctrl-fecha');
+
+  if (!g) return;
+
+  if (g === 'quinielas') {
+    if (sorteoWrap) sorteoWrap.style.display = 'none';
+    if (provWrap) provWrap.style.display = 'block';
+    if (fechaWrap) fechaWrap.style.display = 'block';
+
+    const prov = data?.quinielas?.[provSel?.value];
+    const fechas = Object.keys(prov?.fechas || {}).sort().reverse();
+    if (fechaSel) {
+      fechaSel.innerHTML = fechas.length
+        ? fechas.map((f, idx) => `<option value="${f}">${formatFechaAR(f)}${idx === 0 ? ' (Última)' : ''}</option>`).join('')
+        : '<option value="">Sin fechas</option>';
+    }
+  } else {
+    if (sorteoWrap) sorteoWrap.style.display = 'block';
+    if (provWrap) provWrap.style.display = 'none';
+    if (fechaWrap) fechaWrap.style.display = 'none';
+
+    const draws = getPoceadoDraws(g);
+    if (sorteoSel) {
+      sorteoSel.innerHTML = draws.length
+        ? draws.map((d, idx) => `<option value="${d.sorteo}">Nº ${d.sorteo} — ${formatFechaAR(d.fecha)}${idx === 0 ? ' (Último)' : ''}</option>`).join('')
+        : '<option value="">Sin sorteos</option>';
+    }
+  }
+}
+
+function findMatchedPremio(mod, hitsCount) {
+  const premios = Array.isArray(mod?.premios) ? mod.premios : [];
+  for (const p of premios) {
+    const m = String(p.aciertos || '').match(/\b(\d{1,2})\b/);
+    if (m && Number(m[1]) === hitsCount) {
+      return p;
+    }
+  }
+  return null;
+}
+
+function formatPremioStatus(premio) {
+  if (!premio) return '';
+  const gStr = String(premio.ganadores ?? '').trim();
+  const isVacante = premio.ganadores === 0 || gStr === '0' || /^vac/i.test(gStr) || /^sin\s*gan/i.test(gStr);
+  if (isVacante) {
+    return `<span style="color:var(--amber);font-size:0.84rem;">Premio correspondiente (${premio.aciertos}): pozo ${premio.pozo || 'Vacante'} (tu boleta sería ganadora)</span>`;
+  }
+  const monto = premio.premioIndividual && !/^(—|-|ver extracto)$/i.test(String(premio.premioIndividual))
+    ? premio.premioIndividual
+    : (premio.pozo || 'A confirmar');
+  const ganTxt = !gStr || /ver extracto|a confirmar/i.test(gStr) ? 'A confirmar' : `${gStr} ganador(es)`;
+  return `<span style="color:var(--emerald);font-size:0.84rem;font-weight:600;">¡Con premio! (${premio.aciertos}) — ${monto} • ${ganTxt}</span>`;
+}
+
+async function boot() {
+  const out = document.getElementById('ctrl-result');
+  try {
+    data = await fetchResultados();
+  } catch (err) {
+    if (out) {
+      out.innerHTML = `<div class="result-box">No se pudieron cargar los resultados oficiales. Recargá la página en unos segundos.</div>`;
+    }
+    return;
+  }
+
+  const gameSel = document.getElementById('ctrl-juego');
+  const provSel = document.getElementById('ctrl-prov');
 
   const params = new URLSearchParams(window.location.search);
   const paramGame = params.get('juego');
@@ -34,7 +119,7 @@ async function boot() {
   const updateInputs = (prefill = []) => {
     const g = gameSel.value;
     const cfg = GAME_CONFIG[g];
-    provWrap.style.display = g === 'quinielas' ? 'block' : 'none';
+    populateDrawSelectors();
     document.getElementById('ctrl-hint').textContent = cfg.hint;
     const wrap = document.getElementById('ctrl-inputs');
 
@@ -49,12 +134,17 @@ async function boot() {
 
   gameSel.addEventListener('change', () => {
     updateInputs();
-    document.getElementById('ctrl-result').innerHTML = '';
+    out.innerHTML = '';
+  });
+
+  provSel?.addEventListener('change', () => {
+    populateDrawSelectors();
+    out.innerHTML = '';
   });
 
   document.getElementById('btn-limpiar').addEventListener('click', () => {
     updateInputs();
-    document.getElementById('ctrl-result').innerHTML = '';
+    out.innerHTML = '';
   });
 
   document.getElementById('btn-controlar').addEventListener('click', runCheck);
@@ -101,6 +191,7 @@ function readPoceadoNumbers() {
 }
 
 function runCheck() {
+  if (!data) return showToast('Esperá a que carguen los resultados.');
   const g = document.getElementById('ctrl-juego').value;
   const out = document.getElementById('ctrl-result');
 
@@ -112,8 +203,13 @@ function runCheck() {
     }
     const provKey = document.getElementById('ctrl-prov').value;
     const prov = data.quinielas[provKey];
-    const latestFecha = Object.keys(prov.fechas).sort().reverse()[0];
-    const turnos = prov.fechas[latestFecha];
+    const selectedFecha = document.getElementById('ctrl-fecha')?.value
+      || Object.keys(prov?.fechas || {}).sort().reverse()[0];
+    const turnos = prov?.fechas?.[selectedFecha];
+    if (!turnos) {
+      out.innerHTML = `<div class="result-box">No hay extractos cargados para ${prov?.nombre || provKey}.</div>`;
+      return;
+    }
     const rows = Object.values(turnos).map(t => {
       if (!t.extracto || t.extracto.length === 0) {
         return `<tr><td>${t.nombre}</td><td>Pendiente</td><td>-</td></tr>`;
@@ -129,7 +225,7 @@ function runCheck() {
 
     out.innerHTML = `
       <div class="result-box">
-        <h3 style="margin-top:0;">Resultado para el número <strong>${raw}</strong> en ${prov.nombre} (${formatFechaAR(latestFecha)})</h3>
+        <h3 style="margin-top:0;">Resultado para el número <strong>${raw}</strong> en ${prov.nombre} (${formatFechaAR(selectedFecha)})</h3>
         <table class="data-table">
           <thead><tr><th>Turno</th><th>Estado</th><th>Posiciones encontradas</th></tr></thead>
           <tbody>${rows}</tbody>
@@ -142,16 +238,23 @@ function runCheck() {
   const nums = readPoceadoNumbers();
   if (!nums) return;
   const game = data.poceados[g];
-  const draw = game.ultimo;
+  const draws = getPoceadoDraws(g);
+  const selectedSorteo = Number(document.getElementById('ctrl-sorteo')?.value || 0);
+  const draw = draws.find(d => Number(d.sorteo) === selectedSorteo) || draws[0] || game.ultimo;
 
-  const modHtml = draw.modalidades.map(mod => {
+  const modHtml = (draw.modalidades || []).map(mod => {
     const set = new Set(mod.bolillas);
     const hits = nums.filter(n => set.has(n));
+    const matchedPremio = findMatchedPremio(mod, hits.length);
+    const premioInfo = formatPremioStatus(matchedPremio);
     return `
       <div class="card" style="margin-bottom:12px;">
         <div class="card-header">
-          <strong>${mod.nombre}</strong>
-          <span class="badge ${hits.length >= 4 ? 'badge-ultimo' : 'badge-info'}">${hits.length} acierto${hits.length === 1 ? '' : 's'}</span>
+          <div>
+            <strong>${mod.nombre}</strong>
+            ${premioInfo ? `<div style="margin-top:4px;">${premioInfo}</div>` : ''}
+          </div>
+          <span class="badge ${matchedPremio ? 'badge-ultimo' : 'badge-info'}">${hits.length} acierto${hits.length === 1 ? '' : 's'}</span>
         </div>
         <div class="bolillas-row">
           ${mod.bolillas.map(b => `<span class="bolilla ${nums.includes(b) ? 'match' : ''}">${pad2(b)}</span>`).join('')}
