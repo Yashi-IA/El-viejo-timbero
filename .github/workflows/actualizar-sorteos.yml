@@ -4,12 +4,15 @@ on:
   workflow_dispatch:
   schedule:
     # Horarios en UTC (Argentina es UTC-3)
-    - cron: '30 13 * * 1-6'   # 10:30 AR - Post La Previa
-    - cron: '20 15 * * 1-6'   # 12:20 AR - Post La Primera / El Primero
-    - cron: '25 18 * * 0-6'   # 15:25 AR - Post Matutina + Telekino (dom)
-    - cron: '25 21 * * 1-6'   # 18:25 AR - Post Vespertina
-    - cron: '35 0 * * 0-6'    # 21:35 AR - Post Nocturna, Poceada, Quiniela Plus, Brinco, Quini 6
-    - cron: '35 1 * * 0,4'    # 22:35 AR (mié y sáb) - Post Loto Plus y Loto 5
+    - cron: '30 13 * * 1-6'   # 10:30 AR - La Previa
+    - cron: '20 15 * * 1-6'   # 12:20 AR - La Primera / El Primero
+    - cron: '25 18 * * 0-6'   # 15:25 AR - Matutina + Telekino (dom)
+    - cron: '45 20 * * 0'     # 17:45 AR - Telekino escrutinio (dom)
+    - cron: '25 21 * * 1-6'   # 18:25 AR - Vespertina
+    - cron: '30 0 * * 0-6'    # 21:30 AR - Nocturna, Poceada, Quiniela Plus, Quini 6, Brinco
+    - cron: '15 1 * * 0-6'    # 22:15 AR - Escrutinios nocturnos, Quini 6, Brinco, Loto Plus
+    - cron: '55 1 * * 0,4'    # 22:55 AR (mié y sáb) - Loto Plus escrutinio + Loto 5 Plus (sáb)
+    - cron: '30 2 * * 0,4'    # 23:30 AR (mié y sáb) - Escrutinio tardío Loto Plus / Loto 5 Plus
 
 permissions:
   contents: write
@@ -18,30 +21,71 @@ jobs:
   actualizar-datos:
     runs-on: ubuntu-latest
     steps:
-      - name: Descargar repositorio
+      - name: Descargar repositorio (main)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Configurar Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+      - name: Recuperar último resultados.json desde rama datos (si existe)
+        run: |
+          if git ls-remote --exit-code --heads origin datos >/dev/null 2>&1; then
+            git fetch origin datos:refs/remotes/origin/datos
+            git show origin/datos:resultados.json > resultados.json
+            echo "Cargado resultados.json previo desde origin/datos."
+          else
+            echo "Rama datos aún no existe; se parte de main."
+          fi
+
       - name: Instalar dependencias del scraper
-        run: npm install --no-audit --no-fund
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
 
       - name: Consultar fuentes oficiales y actualizar resultados.json
-        env:
-          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
         run: npm run actualizar
 
-      - name: Guardar y publicar cambios si hubo sorteos nuevos
+      - name: Publicar cambios únicamente en rama datos (0 deploys en Netlify)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet resultados.json sitemap.xml; then
-            echo "Sin cambios nuevos en los sorteos."
-          else
-            git add resultados.json sitemap.xml
-            git commit -m "chore(datos): actualizar resultados oficiales $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+
+          HAS_DATOS=false
+          if git show-ref --verify --quiet refs/remotes/origin/datos; then
+            HAS_DATOS=true
           fi
+
+          if [ "$HAS_DATOS" = true ] && cmp -s <(git show origin/datos:resultados.json) resultados.json; then
+            echo "Sin cambios nuevos respecto a origin/datos."
+            exit 0
+          fi
+
+          TMP_WT=$(mktemp -d)
+          if [ "$HAS_DATOS" = true ]; then
+            git worktree add -B datos "$TMP_WT" origin/datos
+          else
+            git worktree add --orphan -b datos "$TMP_WT"
+            (cd "$TMP_WT" && git rm -rf . >/dev/null 2>&1 || true)
+          fi
+
+          cp resultados.json "$TMP_WT/resultados.json"
+          cd "$TMP_WT"
+          git add resultados.json
+
+          if git diff --cached --quiet; then
+            echo "Sin cambios en resultados.json dentro del worktree."
+          else
+            git commit -m "chore(datos): actualizar resultados oficiales [skip netlify] [skip ci]"
+            git push origin datos
+            curl -sS "https://purge.jsdelivr.net/gh/Yashi-IA/El-viejo-timbero@datos/resultados.json" || true
+          fi
+
+          cd "$GITHUB_WORKSPACE"
+          git worktree remove --force "$TMP_WT"
