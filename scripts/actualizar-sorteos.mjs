@@ -1096,7 +1096,7 @@ function getTableImmediateHeader($, $tbl) {
   let $node = $tbl;
   for (let depth = 0; depth < 3; depth++) {
     const $prevs = $node.prevAll();
-    for (let i = 0; i < Math.min(4, $prevs.length); i++) {
+    for (let i = 0; i < Math.min(5, $prevs.length); i++) {
       const $p = $prevs.eq(i);
       if ($p.is('table') || $p.find('table').length > 0) break;
       const t = cleanText($p.text());
@@ -1105,7 +1105,7 @@ function getTableImmediateHeader($, $tbl) {
     const $parent = $node.parent();
     if (!$parent.length || $parent.is('body, html')) break;
     if ($parent.find('table').length === 1) {
-      const ownText = cleanText($parent.clone().children('table').remove().end().text());
+      const ownText = cleanText($parent.clone().find('table').remove().end().text());
       if (ownText && !parts.some(p => p.includes(ownText))) {
         parts.unshift(ownText);
       }
@@ -1124,17 +1124,24 @@ function resolveLoteriasMundialesTurno(provKey, headerText) {
   const k = normalizeKey(headerText);
 
   if (provKey === 'mendoza') {
-    if (/\b(la\s+)?previa\b/.test(k)) return cfg.turnosMap.previa;
-    if (/\bde\s+la\s+tarde\b/.test(k) || /\btarde\b/.test(k) || /\b17[:.]30\b/.test(k)) return cfg.turnosMap.vespertina;
-    if (/\bvespertina\b/.test(k) || /\b14[:.]00\b/.test(k)) return cfg.turnosMap.matutina;
-    if (/\bmatutina\b/.test(k) || /\b11[:.]30\b/.test(k) || /\bprimera\b/.test(k)) return cfg.turnosMap.primera;
-    if (/\bnocturna\b/.test(k)) return cfg.turnosMap.nocturna;
+    if (/\b(la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa;
+    if (/\bde\s+la\s+tarde\b/.test(k) || /\btarde\b/.test(k) || /\b17[:.,]30\b/.test(k) || /\b18[:.,]00\b/.test(k)) return cfg.turnosMap.vespertina;
+    if (/\bvespertina\b/.test(k) || /\b14[:.,]00\b/.test(k) || /\b15[:.,]00\b/.test(k)) return cfg.turnosMap.matutina;
+    if (/\bmatutina\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k) || /\bprimera\b/.test(k) || /\b1[aª]\.?\s+de\s+la\s+manana\b/.test(k)) return cfg.turnosMap.primera;
+    if (/\bnocturna\b/.test(k) || /\b21[:.,]00\b/.test(k)) return cfg.turnosMap.nocturna;
     return null;
   }
 
-  const m = k.match(/\b(previa|primera|primero|matutina|vespertina|nocturna|turista)\b/);
-  if (!m) return null;
-  return cfg.turnosMap[m[1]] || null;
+  if (/\b(la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa || null;
+  if (/\b1[aª°]?\.?\s+de\s+la\s+manana\b/.test(k) || /\b(primera|primero)\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k)) {
+    return cfg.turnosMap.primera || cfg.turnosMap.primero || null;
+  }
+  if (/\bmatutina\b/.test(k) || /\b14[:.,]00\b/.test(k) || /\b15[:.,]00\b/.test(k)) return cfg.turnosMap.matutina || null;
+  if (/\bvespertina\b/.test(k) || /\b17[:.,]30\b/.test(k) || /\b18[:.,]00\b/.test(k)) return cfg.turnosMap.vespertina || null;
+  if (/\bnocturna\b/.test(k) || /\b21[:.,]00\b/.test(k)) return cfg.turnosMap.nocturna || null;
+  if (/\bturista\b/.test(k) || /\b22[:.,]15\b/.test(k)) return cfg.turnosMap.turista || null;
+
+  return null;
 }
 
 function getSectionFallbackTurnoText($, $tbl) {
@@ -1142,7 +1149,7 @@ function getSectionFallbackTurnoText($, $tbl) {
   for (let depth = 0; depth < 4; depth++) {
     const $parent = $cur.parent();
     if (!$parent.length || $parent.is('body, html')) break;
-    const $prevHeading = $cur.prevAll('h1, h2, h3, h4, h5, .card-header, .panel-heading, strong, p').first();
+    const $prevHeading = $cur.prevAll('h1, h2, h3, h4, h5, .card-header, .panel-heading, strong, p, div').first();
     if ($prevHeading.length && $prevHeading.find('table').length === 0) {
       const txt = cleanText($prevHeading.text());
       if (txt) return txt;
