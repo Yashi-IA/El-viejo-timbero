@@ -51,38 +51,64 @@ jobs:
 
       - name: Consultar fuentes oficiales y actualizar resultados.json
         run: |
-          npm run actualizar 2>&1 | tee /tmp/scraper.log
           node -e '
             const urls = [
-              "https://www.tujugada.com.ar/quiniela-nacional.asp",
-              "https://www.tujugada.com.ar/quiniela_provincia_buenos_aires.asp",
+              "https://www.lanacion.com.ar/loterias/quini-6/",
+              "https://www.lanacion.com.ar/loterias/loto-plus/",
+              "https://www.lanacion.com.ar/loterias/telekino/",
+              "https://www.lanacion.com.ar/loterias/brinco/",
+              "https://www.lanacion.com.ar/loterias/loto-5/",
+              "https://www.lanacion.com.ar/loterias/quiniela-poceada/",
+              "https://www.lanacion.com.ar/loterias/quiniela-plus/",
               "https://www.lanacion.com.ar/loterias/quiniela-nacional/",
-              "https://www.notitimba.com/lots/",
-              "https://www.loteriadesalta.com/resultados-oficiales/quini-6/"
+              "https://www.lanacion.com.ar/loterias/quiniela-provincia/",
+              "https://www.lanacion.com.ar/loterias/quiniela-santa-fe/",
+              "https://www.lanacion.com.ar/loterias/quiniela-cordoba/",
+              "https://www.lanacion.com.ar/loterias/quiniela-entre-rios/",
+              "https://www.lanacion.com.ar/loterias/quiniela-mendoza/",
+              "https://www.lanacion.com.ar/loterias/quiniela-corrientes/",
+              "https://www.iafas.gov.ar/loteria-er/",
+              "https://www.clarin.com/loterias-y-quinielas/",
+              "https://www.cronista.com/loterias/",
+              "https://www.dequinielas.com/quiniela-entre-rios/",
+              "https://www.dequinielas.com/quiniela-mendoza/",
+              "https://www.dequinielas.com/quiniela-corrientes/",
+              "https://www.ruta1000.com.ar/",
+              "https://www.quinielas.com.ar/",
+              "https://www.loteriadecorrientes.gov.ar/",
+              "https://www.vivielazar.com.ar/quiniela-mendoza",
+              "https://www.vivielazar.com.ar/quiniela-entre-rios",
+              "https://www.vivielazar.com.ar/quiniela-corrientes",
+              "https://www.resultadosquiniela.com.ar/",
+              "https://www.quinielasargentinas.com.ar/"
             ];
             (async () => {
               for (const u of urls) {
                 try {
-                  const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" } });
+                  const ac = new AbortController();
+                  const tm = setTimeout(() => ac.abort(), 8000);
+                  const r = await fetch(u, {
+                    signal: ac.signal,
+                    headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36" }
+                  });
+                  clearTimeout(tm);
                   const t = await r.text();
-                  console.log("DIAG", u, "status=" + r.status, "len=" + t.length, "has26=" + /26\/11\/2026/.test(t));
-                  if (u.includes("quiniela-nacional.asp")) {
-                    const idx = t.indexOf("26/11/2026");
-                    console.log("TUJUGADA_SNIPPET:", t.slice(Math.max(0, idx - 150), idx + 600).replace(/\s+/g, " "));
-                  }
+                  const has26 = /26\/11\/2026|26 de noviembre/i.test(t);
+                  const hasNextData = t.includes("__NEXT_DATA__") || t.includes("Fusion.globalContent");
+                  console.log("PROBE", r.status, "len=" + t.length, "has26=" + has26, "json=" + hasNextData, u);
                 } catch (e) {
-                  console.log("DIAG_ERR", u, e.message);
+                  console.log("PROBE_ERR", u, e.message);
                 }
               }
             })();
-          ' 2>&1 | tee -a /tmp/scraper.log
+          ' 2>&1 | tee /tmp/scraper.log
           TMP_DBG=$(mktemp -d)
           git worktree add --orphan -b debug-log "$TMP_DBG"
           cp /tmp/scraper.log "$TMP_DBG/scraper.log"
           git -C "$TMP_DBG" config user.name "github-actions[bot]"
           git -C "$TMP_DBG" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git -C "$TMP_DBG" add scraper.log
-          git -C "$TMP_DBG" commit -m "debug: scraper log"
+          git -C "$TMP_DBG" commit -m "debug: probe sources"
           git -C "$TMP_DBG" push --force origin debug-log
           git worktree remove --force "$TMP_DBG"
 
