@@ -1,18 +1,75 @@
-import { initTheme, fetchResultados, formatFechaAR, pad2 } from '/common.js';
+import { initTheme, fetchResultados, formatFechaAR, formatDateTimeAR, pad2 } from '/common.js';
 
 initTheme();
 
 const ORDER = ['quini6', 'lotoPlus', 'telekino', 'brinco', 'loto5', 'laPoceada', 'quinielaPlus'];
 let data = null;
 let currentGame = 'quini6';
-let currentDrawIndex = 0; // 0 = ultimo, >=1 = historico[index-1]
+let currentDrawIndex = 0;
+
+function formatPozo(raw) {
+  if (!raw) return 'A confirmar';
+  const s = String(raw).trim();
+  if (/^\$\s*\d{6,}$/.test(s)) {
+    const digits = s.replace(/[^\d]/g, '');
+    const formatted = Number(digits).toLocaleString('es-AR');
+    return `$ ${formatted}`;
+  }
+  return s.replace(/^\$\s*/, '$ ');
+}
+
+function getSortedUniqueDraws(game) {
+  const raw = [game.ultimo, ...(game.historico || [])].filter(d => d && d.sorteo);
+  const seen = new Set();
+  const unique = [];
+  for (const d of raw) {
+    const s = Number(d.sorteo);
+    if (seen.has(s)) continue;
+    seen.add(s);
+    unique.push(d);
+  }
+  return unique.sort((a, b) => Number(b.sorteo) - Number(a.sorteo));
+}
+
+function renderPremioRow(p) {
+  const gStr = String(p.ganadores ?? '').trim();
+  const isVacante = p.ganadores === 0 || gStr === '0' || /^vac/i.test(gStr) || /^sin\s*gan/i.test(gStr);
+  const isPending = !isVacante && (!gStr || /^(ver extracto|a confirmar|procesando|-|—)$/i.test(gStr));
+
+  let ganHtml;
+  let montoMostrado;
+  if (isVacante) {
+    ganHtml = '<span class="vacante-pill">Vacante</span>';
+    montoMostrado = formatPozo(p.pozo && p.pozo !== 'Vacante' ? p.pozo : 'Vacante');
+  } else if (isPending) {
+    ganHtml = '<span style="color:var(--muted);">A confirmar</span>';
+    montoMostrado = p.pozo && !/ver extracto/i.test(p.pozo) ? formatPozo(p.pozo) : 'A confirmar';
+  } else {
+    const numGan = Number(String(gStr).replace(/\./g, ''));
+    ganHtml = !Number.isNaN(numGan) && /^\d+$/.test(String(gStr).replace(/\./g, ''))
+      ? numGan.toLocaleString('es-AR')
+      : gStr;
+    const ind = p.premioIndividual && !/^(—|-|ver extracto)$/i.test(String(p.premioIndividual).trim())
+      ? p.premioIndividual
+      : p.pozo;
+    montoMostrado = ind ? formatPozo(ind) : '-';
+  }
+
+  return `
+    <tr>
+      <td>${p.aciertos}</td>
+      <td class="num">${ganHtml}</td>
+      <td class="num"><strong>${montoMostrado}</strong></td>
+    </tr>
+  `;
+}
 
 async function boot() {
   try {
     data = await fetchResultados();
     const updEl = document.getElementById('last-updated');
     if (updEl && data.actualizadoEl) {
-      updEl.textContent = `Actualizado: ${new Date(data.actualizadoEl).toLocaleString('es-AR')}`;
+      updEl.textContent = `Actualizado: ${formatDateTimeAR(data.actualizadoEl)}`;
     }
     renderPills();
     renderGame();
@@ -27,6 +84,7 @@ function renderPills() {
   if (!wrap) return;
   wrap.innerHTML = ORDER.map(key => {
     const g = data.poceados[key];
+    if (!g) return '';
     return `<button class="game-pill ${key === currentGame ? 'active' : ''}" data-game="${key}">${g.nombre}</button>`;
   }).join('') + `<a class="game-pill" href="/quinielas.html">Quinielas (7 provincias) →</a>`;
 
@@ -45,8 +103,12 @@ function renderGame() {
   const game = data.poceados[currentGame];
   if (!root || !game) return;
 
-  const draws = [game.ultimo, ...(game.historico || [])];
-  const draw = draws[currentDrawIndex] || game.ultimo;
+  const draws = getSortedUniqueDraws(game);
+  if (draws.length === 0) {
+    root.innerHTML = `<div class="card">No hay sorteos disponibles para ${game.nombre}.</div>`;
+    return;
+  }
+  const draw = draws[currentDrawIndex] || draws[0];
   const isLatest = currentDrawIndex === 0;
 
   const optionsHtml = draws.map((d, idx) =>
@@ -72,7 +134,7 @@ function renderGame() {
         </div>
         <div class="pozo-box">
           <span class="pozo-label">Pozo Próximo Estimado</span>
-          <span class="pozo-value">${game.pozoProximo || 'A confirmar'}</span>
+          <span class="pozo-value">${formatPozo(game.pozoProximo)}</span>
         </div>
       </div>
     </section>
@@ -84,7 +146,7 @@ function renderGame() {
 
   const cardsHtml = `
     <div class="cards-grid-2">
-      ${draw.modalidades.map((mod, idx) => `
+      ${(draw.modalidades || []).map((mod, idx) => `
         <article class="card" id="mod-card-${idx}">
           <div class="card-header">
             <h2 class="card-title">${mod.nombre}</h2>
@@ -92,7 +154,7 @@ function renderGame() {
           </div>
           <div class="card-body">
             <div class="bolillas-row">
-              ${mod.bolillas.map(n => `<span class="bolilla">${pad2(n)}</span>`).join('')}
+              ${(mod.bolillas || []).map(n => `<span class="bolilla">${pad2(n)}</span>`).join('')}
               ${idx === 0 ? plusChip : ''}
             </div>
             <table class="data-table">
@@ -104,17 +166,7 @@ function renderGame() {
                 </tr>
               </thead>
               <tbody>
-                ${mod.premios.map(p => {
-                  const isVacante = String(p.ganadores).toLowerCase() === 'vacante';
-                  const montoMostrado = isVacante ? (p.pozo || 'Vacante') : (p.premioIndividual || p.pozo || '-');
-                  return `
-                    <tr>
-                      <td>${p.aciertos}</td>
-                      <td class="num">${isVacante ? '<span class="vacante-pill">Vacante</span>' : p.ganadores}</td>
-                      <td class="num"><strong>${montoMostrado}</strong></td>
-                    </tr>
-                  `;
-                }).join('')}
+                ${(mod.premios || []).map(renderPremioRow).join('')}
               </tbody>
             </table>
           </div>
