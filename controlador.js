@@ -1,4 +1,4 @@
-import { initTheme, fetchResultados, formatFechaAR, pad2, showToast } from '/common.js';
+import { initTheme, fetchResultados, startAutoRefresh, formatFechaAR, pad2, showToast } from '/common.js';
 import { saveJugada } from '/storage.js';
 
 initTheme();
@@ -167,6 +167,27 @@ async function boot() {
   if (paramAuto === '1' && initialNums.length > 0) {
     runCheck();
   }
+
+  startAutoRefresh((freshData) => {
+    const prevSorteo = document.getElementById('ctrl-sorteo')?.value;
+    const prevFecha = document.getElementById('ctrl-fecha')?.value;
+    const sorteoWasLatest = document.getElementById('ctrl-sorteo')?.selectedIndex === 0;
+    const fechaWasLatest = document.getElementById('ctrl-fecha')?.selectedIndex === 0;
+
+    data = freshData;
+    populateDrawSelectors();
+
+    const sorteoSel = document.getElementById('ctrl-sorteo');
+    if (sorteoSel && prevSorteo && !sorteoWasLatest) {
+      const hasPrev = [...sorteoSel.options].some(o => o.value === prevSorteo);
+      if (hasPrev) sorteoSel.value = prevSorteo;
+    }
+    const fechaSel = document.getElementById('ctrl-fecha');
+    if (fechaSel && prevFecha && !fechaWasLatest) {
+      const hasPrev = [...fechaSel.options].some(o => o.value === prevFecha);
+      if (hasPrev) fechaSel.value = prevFecha;
+    }
+  });
 }
 
 function readPoceadoNumbers() {

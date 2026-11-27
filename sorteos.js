@@ -1,4 +1,4 @@
-import { initTheme, fetchResultados, formatFechaAR, formatDateTimeAR, pad2 } from '/common.js';
+import { initTheme, fetchResultados, startAutoRefresh, formatFechaAR, formatDateTimeAR, pad2 } from '/common.js';
 
 initTheme();
 
@@ -64,15 +64,25 @@ function renderPremioRow(p) {
   `;
 }
 
+function updateLastUpdatedBadge() {
+  const updEl = document.getElementById('last-updated');
+  if (updEl && data?.actualizadoEl) {
+    updEl.textContent = `Actualizado: ${formatDateTimeAR(data.actualizadoEl)}`;
+  }
+}
+
 async function boot() {
   try {
     data = await fetchResultados();
-    const updEl = document.getElementById('last-updated');
-    if (updEl && data.actualizadoEl) {
-      updEl.textContent = `Actualizado: ${formatDateTimeAR(data.actualizadoEl)}`;
-    }
+    updateLastUpdatedBadge();
     renderPills();
     renderGame();
+    startAutoRefresh((freshData) => {
+      data = freshData;
+      updateLastUpdatedBadge();
+      renderPills();
+      renderGame();
+    });
   } catch (err) {
     const root = document.getElementById('sorteos-root');
     if (root) root.innerHTML = `<div class="card">No se pudieron cargar los resultados. Verificá que <code>resultados.json</code> esté disponible.</div>`;
