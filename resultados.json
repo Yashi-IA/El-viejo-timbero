@@ -1,5 +1,5 @@
 {
-  "actualizadoEl": "2026-11-26T22:59:00-03:00",
+  "actualizadoEl": "2026-11-26T23:13:28-03:00",
   "poceados": {
     "quini6": {
       "nombre": "Quini 6",
@@ -291,7 +291,6 @@
       "ultimo": {
         "sorteo": 3938,
         "fecha": "2026-11-25",
-        "numeroPlus": 0,
         "modalidades": [
           {
             "nombre": "Tradicional",
@@ -307,20 +306,20 @@
               {
                 "aciertos": "6 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 4.828.656.488,99",
+                "pozo": "$ 4.828.656.489,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "5 aciertos",
                 "ganadores": 20,
-                "pozo": "$ 16.036.633,80",
-                "premioIndividual": "$ 801.831,69"
+                "pozo": "$ 801.832,00",
+                "premioIndividual": "$ 801.832,00"
               },
               {
                 "aciertos": "4 aciertos",
                 "ganadores": 689,
-                "pozo": "$ 3.207.326,76",
-                "premioIndividual": "$ 4.655,05"
+                "pozo": "$ 4.655,00",
+                "premioIndividual": "$ 4.655,00"
               }
             ]
           },
@@ -338,20 +337,20 @@
               {
                 "aciertos": "6 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 2.696.557.115,23",
+                "pozo": "$ 2.696.557.115,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "5 aciertos",
                 "ganadores": 10,
-                "pozo": "$ 16.036.633,80",
-                "premioIndividual": "$ 1.603.663,38"
+                "pozo": "$ 1.603.663,00",
+                "premioIndividual": "$ 1.603.663,00"
               },
               {
                 "aciertos": "4 aciertos",
                 "ganadores": 701,
-                "pozo": "$ 3.207.326,76",
-                "premioIndividual": "$ 4.575,36"
+                "pozo": "$ 4.575,00",
+                "premioIndividual": "$ 4.575,00"
               }
             ]
           },
@@ -386,14 +385,21 @@
             ],
             "premios": [
               {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 41.306.481,00",
+                "premioIndividual": "Vacante"
+              },
+              {
                 "aciertos": "5 aciertos",
                 "ganadores": 2,
-                "pozo": "$ 41.306.481,00",
-                "premioIndividual": "$ 20.653.240,50"
+                "pozo": "$ 20.653.241,00",
+                "premioIndividual": "$ 20.653.241,00"
               }
             ]
           }
-        ]
+        ],
+        "numeroPlus": 0
       },
       "historico": [
         {
@@ -542,26 +548,32 @@
               {
                 "aciertos": "15 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 1.576.504.379",
+                "pozo": "$ 1.576.504.379,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "14 aciertos",
                 "ganadores": 19,
-                "pozo": "$ 772.377",
-                "premioIndividual": "$ 772.377"
+                "pozo": "$ 772.377,00",
+                "premioIndividual": "$ 772.377,00"
               },
               {
                 "aciertos": "13 aciertos",
                 "ganadores": 684,
-                "pozo": "$ 64.762",
-                "premioIndividual": "$ 64.762"
+                "pozo": "$ 64.762,00",
+                "premioIndividual": "$ 64.762,00"
               },
               {
                 "aciertos": "12 aciertos",
-                "ganadores": 8028,
-                "pozo": "$ 18.923",
-                "premioIndividual": "$ 18.923"
+                "ganadores": 802,
+                "pozo": "$ 18.923,00",
+                "premioIndividual": "$ 18.923,00"
+              },
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": 8,
+                "pozo": "A confirmar",
+                "premioIndividual": "A confirmar"
               }
             ]
           },
@@ -586,10 +598,70 @@
             ],
             "premios": [
               {
-                "aciertos": "14 aciertos",
+                "aciertos": "15 aciertos",
                 "ganadores": 28,
-                "pozo": "$ 194.115",
-                "premioIndividual": "$ 194.115"
+                "pozo": "$ 194.115,00",
+                "premioIndividual": "$ 194.115,00"
+              },
+              {
+                "aciertos": "14 aciertos",
+                "ganadores": 326,
+                "pozo": "$ 3.000.000,00",
+                "premioIndividual": "$ 3.000.000,00"
+              },
+              {
+                "aciertos": "13 aciertos",
+                "ganadores": 8,
+                "pozo": "$ 3.000.000,00",
+                "premioIndividual": "$ 3.000.000,00"
+              },
+              {
+                "aciertos": "12 aciertos",
+                "ganadores": 313,
+                "pozo": "$ 3.000.000,00",
+                "premioIndividual": "$ 3.000.000,00"
+              },
+              {
+                "aciertos": "11 aciertos",
+                "ganadores": 297,
+                "pozo": "$ 3.000.000,00",
+                "premioIndividual": "$ 3.000.000,00"
+              },
+              {
+                "aciertos": "10 aciertos",
+                "ganadores": 338,
+                "pozo": "$ 3.000.000,00",
+                "premioIndividual": "$ 3.000.000,00"
+              },
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": 540,
+                "pozo": "A confirmar",
+                "premioIndividual": "A confirmar"
+              },
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": 743,
+                "pozo": "A confirmar",
+                "premioIndividual": "A confirmar"
+              },
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": 190,
+                "pozo": "A confirmar",
+                "premioIndividual": "A confirmar"
+              },
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": 746,
+                "pozo": "A confirmar",
+                "premioIndividual": "A confirmar"
+              },
+              {
+                "aciertos": "15 aciertos",
+                "ganadores": 616,
+                "pozo": "A confirmar",
+                "premioIndividual": "A confirmar"
               }
             ]
           }
@@ -659,12 +731,6 @@
             ],
             "premios": [
               {
-                "aciertos": "cupones ganadores - sueldos 1 año",
-                "ganadores": "Vacante",
-                "pozo": "$ 8.346.253,92",
-                "premioIndividual": "Vacante"
-              },
-              {
                 "aciertos": "6 aciertos",
                 "ganadores": "Vacante",
                 "pozo": "$ 756.241.862,44",
@@ -684,9 +750,21 @@
               },
               {
                 "aciertos": "3 aciertos",
-                "ganadores": 2980,
+                "ganadores": 298,
                 "pozo": "$ 2.080,44",
                 "premioIndividual": "$ 2.080,44"
+              },
+              {
+                "aciertos": "2 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "$ 8.346.253,92",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "6 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "Vacante",
+                "premioIndividual": "Vacante"
               }
             ]
           },
@@ -831,20 +909,20 @@
               {
                 "aciertos": "8 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 947.496.902",
+                "pozo": "$ 947.496.902,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "7 aciertos",
                 "ganadores": 2,
-                "pozo": "$ 3.219.793",
-                "premioIndividual": "$ 3.219.793"
+                "pozo": "$ 3.219.793,00",
+                "premioIndividual": "$ 3.219.793,00"
               },
               {
                 "aciertos": "6 aciertos",
                 "ganadores": 27,
-                "pozo": "$ 1.878.213",
-                "premioIndividual": "$ 1.878.213"
+                "pozo": "$ 1.878.213,00",
+                "premioIndividual": "$ 1.878.213,00"
               }
             ]
           }
@@ -922,55 +1000,55 @@
       ],
       "cantidadBolillas": 8,
       "ultimo": {
-        "sorteo": 12924,
-        "fecha": "2026-11-25",
+        "sorteo": 12925,
+        "fecha": "2026-11-26",
         "modalidades": [
           {
             "nombre": "Quiniela Plus (Tradicional)",
             "bolillas": [
-              7,
-              12,
-              26,
-              34,
-              35,
-              40,
-              43,
-              53,
-              56,
-              59,
-              61,
-              64,
-              65,
+              1,
+              5,
+              13,
+              14,
+              19,
+              32,
+              38,
+              39,
+              44,
+              48,
+              69,
+              73,
               80,
               81,
+              82,
+              84,
               90,
-              91,
-              94,
-              97,
-              98
+              92,
+              93,
+              96
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 60.000.000,00",
+                "pozo": "$ 78.094.195,20",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "7 aciertos",
-                "ganadores": "Vacante",
-                "pozo": "Vacante",
-                "premioIndividual": "Vacante"
+                "ganadores": 1,
+                "pozo": "$ 2.000.000,00",
+                "premioIndividual": "$ 2.000.000,00"
               },
               {
                 "aciertos": "6 aciertos",
-                "ganadores": 53,
+                "ganadores": 83,
                 "pozo": "$ 50.000,00",
                 "premioIndividual": "$ 50.000,00"
               },
               {
                 "aciertos": "5 aciertos",
-                "ganadores": 549,
+                "ganadores": 799,
                 "pozo": "$ 5.000,00",
                 "premioIndividual": "$ 5.000,00"
               }
@@ -979,88 +1057,82 @@
           {
             "nombre": "Super Plus",
             "bolillas": [
-              5,
-              14,
-              28,
-              31,
-              36,
-              37,
-              41,
+              3,
+              6,
+              8,
+              25,
+              27,
+              38,
               47,
-              65,
+              60,
+              66,
+              68,
               70,
-              76,
-              82,
-              84,
-              85,
-              87,
-              91,
-              93,
-              96,
-              97,
-              98
+              72,
+              73,
+              74,
+              79,
+              86,
+              88,
+              90,
+              95,
+              97
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
-                "ganadores": "Vacante",
-                "pozo": "$ 12.035.430,00",
-                "premioIndividual": "Vacante"
-              },
-              {
-                "aciertos": "7 aciertos",
                 "ganadores": 3,
-                "pozo": "$ 4.011.810,00",
-                "premioIndividual": "$ 4.011.810,00"
+                "pozo": "$ 3.729.570,00",
+                "premioIndividual": "$ 3.729.570,00"
               }
             ]
           },
           {
             "nombre": "Chance Plus",
             "bolillas": [
-              5,
-              13,
-              18,
-              19,
-              22,
-              34,
+              0,
+              9,
+              15,
+              21,
+              23,
+              33,
+              37,
               38,
-              47,
-              49,
-              55,
+              48,
+              51,
+              53,
               58,
-              59,
-              64,
               66,
-              69,
+              68,
               70,
-              75,
-              79,
+              74,
               81,
-              84
+              84,
+              89,
+              91
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 132.593.643,00",
+                "pozo": "$ 141.171.654,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "7 aciertos",
-                "ganadores": 3,
+                "ganadores": 2,
                 "pozo": "$ 700.000,00",
                 "premioIndividual": "$ 700.000,00"
               },
               {
                 "aciertos": "6 aciertos",
-                "ganadores": 58,
+                "ganadores": 65,
                 "pozo": "$ 30.000,00",
                 "premioIndividual": "$ 30.000,00"
               },
               {
                 "aciertos": "5 aciertos",
-                "ganadores": 713,
+                "ganadores": 576,
                 "pozo": "$ 5.000,00",
                 "premioIndividual": "$ 5.000,00"
               }
@@ -1068,7 +1140,155 @@
           }
         ]
       },
-      "historico": []
+      "historico": [
+        {
+          "sorteo": 12924,
+          "fecha": "2026-11-25",
+          "modalidades": [
+            {
+              "nombre": "Quiniela Plus (Tradicional)",
+              "bolillas": [
+                7,
+                12,
+                26,
+                34,
+                35,
+                40,
+                43,
+                53,
+                56,
+                59,
+                61,
+                64,
+                65,
+                80,
+                81,
+                90,
+                91,
+                94,
+                97,
+                98
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 60.000.000,00",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "7 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "Vacante",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": 53,
+                  "pozo": "$ 50.000,00",
+                  "premioIndividual": "$ 50.000,00"
+                },
+                {
+                  "aciertos": "5 aciertos",
+                  "ganadores": 549,
+                  "pozo": "$ 5.000,00",
+                  "premioIndividual": "$ 5.000,00"
+                }
+              ]
+            },
+            {
+              "nombre": "Super Plus",
+              "bolillas": [
+                5,
+                14,
+                28,
+                31,
+                36,
+                37,
+                41,
+                47,
+                65,
+                70,
+                76,
+                82,
+                84,
+                85,
+                87,
+                91,
+                93,
+                96,
+                97,
+                98
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 12.035.430,00",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "7 aciertos",
+                  "ganadores": 3,
+                  "pozo": "$ 4.011.810,00",
+                  "premioIndividual": "$ 4.011.810,00"
+                }
+              ]
+            },
+            {
+              "nombre": "Chance Plus",
+              "bolillas": [
+                5,
+                13,
+                18,
+                19,
+                22,
+                34,
+                38,
+                47,
+                49,
+                55,
+                58,
+                59,
+                64,
+                66,
+                69,
+                70,
+                75,
+                79,
+                81,
+                84
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 132.593.643,00",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "7 aciertos",
+                  "ganadores": 3,
+                  "pozo": "$ 700.000,00",
+                  "premioIndividual": "$ 700.000,00"
+                },
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": 58,
+                  "pozo": "$ 30.000,00",
+                  "premioIndividual": "$ 30.000,00"
+                },
+                {
+                  "aciertos": "5 aciertos",
+                  "ganadores": 713,
+                  "pozo": "$ 5.000,00",
+                  "premioIndividual": "$ 5.000,00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   },
   "quinielas": {
