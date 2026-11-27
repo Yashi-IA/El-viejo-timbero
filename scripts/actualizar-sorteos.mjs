@@ -328,12 +328,30 @@ function archiveIfNewDraw(gameKey, gameObj, newDraw, pozoProximo = null) {
   const newSorteo = normalizedNew.sorteo;
 
   if (prev && prevSorteo > 0) {
-    if (newSorteo < prevSorteo) {
-      console.log(`  [${gameKey}] Ignorando regresión de sorteo (${newSorteo} < ${prevSorteo}).`);
+    // Si es exactamente la misma fecha que prev.fecha, puede haber cambiado el número de sorteo
+    // (ej. Clarín estimó prev+1 y luego La Nación trajo el número oficial exacto, o viceversa).
+    // En ese caso actualizamos ultimo sin duplicar en historico.
+    if (prev.fecha && normalizedNew.fecha === prev.fecha && newSorteo !== prevSorteo) {
+      if (normalizedNew.numeroPlus === undefined && prev.numeroPlus !== undefined) {
+        normalizedNew.numeroPlus = prev.numeroPlus;
+      }
+      const prevScore = drawCompletenessScore(prev);
+      const newScore = drawCompletenessScore(normalizedNew);
+      if (newScore >= prevScore || newSorteo > prevSorteo) {
+        gameObj.ultimo = normalizedNew;
+        gameObj.estadoFuente = 'ok';
+        sanitizeHistorico(gameObj);
+        return true;
+      }
       return changed;
     }
-    if (prev.fecha && normalizedNew.fecha < prev.fecha && newSorteo === prevSorteo) {
+
+    if (prev.fecha && normalizedNew.fecha < prev.fecha) {
       console.log(`  [${gameKey}] Ignorando regresión de fecha (${normalizedNew.fecha} < ${prev.fecha}).`);
+      return changed;
+    }
+    if (newSorteo < prevSorteo) {
+      console.log(`  [${gameKey}] Ignorando regresión de sorteo (${newSorteo} < ${prevSorteo}).`);
       return changed;
     }
 
@@ -369,7 +387,7 @@ function archiveIfNewDraw(gameKey, gameObj, newDraw, pozoProximo = null) {
       return changed;
     }
 
-    // newSorteo > prevSorteo: archivar anterior en historico
+    // newSorteo > prevSorteo y fecha distinta (posterior): archivar anterior en historico
     gameObj.historico = gameObj.historico || [];
     gameObj.historico.unshift(prev);
   }
@@ -781,6 +799,579 @@ async function parseLaNacionPoceado(gameKey, url, existingUltimo = null) {
   return parseLaNacionPoceadoFromHtml(gameKey, html, existingUltimo);
 }
 
+// ============================================================================
+// PARSER DE POCEADOS EN CLARÍN (__NEXT_DATA__ / JSON + fallback DOM/texto)
+// ============================================================================
+
+const CLARIN_POCEADOS = {
+  quini6: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/quini6',
+    min: 0,
+    max: 45,
+    expectedBolillas: 6,
+    defaultAciertos: '6 aciertos',
+    minModalidades: 4,
+    canonicalOrder: ['Tradicional Primer Sorteo', 'La Segunda del Quini', 'Revancha', 'Siempre Sale'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('pozo extra') || k === 'extra') return null;
+      if (k.includes('tradicional')) return 'Tradicional Primer Sorteo';
+      if (k.includes('segunda')) return 'La Segunda del Quini';
+      if (k.includes('revancha')) return 'Revancha';
+      if (k.includes('siempre sale')) return 'Siempre Sale';
+      return null;
+    }
+  },
+  lotoPlus: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/loto',
+    min: 0,
+    max: 45,
+    expectedBolillas: 6,
+    defaultAciertos: '6 aciertos',
+    minModalidades: 4,
+    hasNumeroPlus: true,
+    canonicalOrder: ['Tradicional', 'Match', 'Desquite', 'Sale o Sale'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('tradicional')) return 'Tradicional';
+      if (k.includes('match')) return 'Match';
+      if (k.includes('desquite')) return 'Desquite';
+      if (k.includes('sale o sale')) return 'Sale o Sale';
+      return null;
+    }
+  },
+  telekino: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/telekino',
+    min: 1,
+    max: 25,
+    expectedBolillas: 15,
+    defaultAciertos: '15 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Telekino Tradicional', 'Rekino'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('rekino')) return 'Rekino';
+      if (k.includes('telekino') || k.includes('tradicional')) return 'Telekino Tradicional';
+      return null;
+    }
+  },
+  brinco: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/brinco',
+    min: 0,
+    max: 39,
+    expectedBolillas: 6,
+    defaultAciertos: '6 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Brinco Tradicional', 'Brinco Junior Siempre Sale'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('junior')) return 'Brinco Junior Siempre Sale';
+      if (k.includes('tradicional') || k === 'brinco') return 'Brinco Tradicional';
+      return null;
+    }
+  },
+  loto5: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/loto5',
+    min: 0,
+    max: 36,
+    expectedBolillas: 5,
+    defaultAciertos: '5 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Sorteo Tradicional (00 al 36)'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('loto 5') || k.includes('tradicional') || k === 'loto5' || k.includes('sorteo')) {
+        return 'Sorteo Tradicional (00 al 36)';
+      }
+      return 'Sorteo Tradicional (00 al 36)';
+    }
+  },
+  laPoceada: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/poceada',
+    min: 0,
+    max: 99,
+    expectedBolillas: 20,
+    defaultAciertos: '8 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Extracto de 20 números (00 al 99)'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('poceada') || k.includes('tradicional') || k.includes('extracto')) {
+        return 'Extracto de 20 números (00 al 99)';
+      }
+      return 'Extracto de 20 números (00 al 99)';
+    }
+  },
+  quinielaPlus: {
+    url: 'https://www.clarin.com/loterias-y-quinielas/plus',
+    min: 0,
+    max: 99,
+    expectedBolillas: 20,
+    defaultAciertos: '8 aciertos',
+    minModalidades: 1,
+    canonicalOrder: ['Quiniela Plus (Tradicional)', 'Super Plus', 'Chance Plus'],
+    mapModalidad(rawName) {
+      const k = normalizeKey(rawName);
+      if (k.includes('super')) return 'Super Plus';
+      if (k.includes('chance')) return 'Chance Plus';
+      if (k.includes('quiniela plus') || k.includes('tradicional')) return 'Quiniela Plus (Tradicional)';
+      return null;
+    }
+  }
+};
+
+function resolveClarinSorteoNumber(extractedSorteo, fecha, existingGameObj) {
+  if (extractedSorteo && Number.isInteger(extractedSorteo) && extractedSorteo > 0) {
+    return extractedSorteo;
+  }
+  const prevUltimo = existingGameObj?.ultimo;
+  const prevSorteo = Number(prevUltimo?.sorteo || 0);
+  const prevFecha = prevUltimo?.fecha || null;
+  if (!prevSorteo || !prevFecha) return null;
+
+  if (fecha === prevFecha) return prevSorteo;
+  if (fecha > prevFecha) return prevSorteo + 1;
+  return null; // fecha < prevFecha -> más viejo, se ignora
+}
+
+function buildClarinPremiosAligned(aciertosList, ganadoresList, premiosList, defaultAciertos) {
+  const len = Math.max(aciertosList.length, ganadoresList.length, premiosList.length);
+  if (len === 0) {
+    return [{
+      aciertos: defaultAciertos,
+      ganadores: 'A confirmar',
+      pozo: 'A confirmar',
+      premioIndividual: 'A confirmar'
+    }];
+  }
+
+  const rows = [];
+  for (let i = 0; i < len; i++) {
+    const acRaw = aciertosList[i] ?? '';
+    const ganRaw = ganadoresList[i] ?? '';
+    const premRaw = premiosList[i] ?? '';
+
+    const aciertos = normalizeAciertos(acRaw || defaultAciertos);
+    const ganadores = normalizeGanadores(ganRaw);
+    const money = formatMoney(premRaw);
+    const isZeroMoney = !money || /^\$\s*0+(?:[.,]0+)?$/.test(money);
+
+    if (ganadores === 'Vacante') {
+      rows.push({
+        aciertos,
+        ganadores: 'Vacante',
+        pozo: isZeroMoney ? 'Vacante' : money,
+        premioIndividual: 'Vacante'
+      });
+    } else if (ganadores === 'A confirmar') {
+      rows.push({
+        aciertos,
+        ganadores: 'A confirmar',
+        pozo: isZeroMoney ? 'A confirmar' : money,
+        premioIndividual: 'A confirmar'
+      });
+    } else {
+      rows.push({
+        aciertos,
+        ganadores,
+        pozo: isZeroMoney ? 'A confirmar' : money,
+        premioIndividual: isZeroMoney ? 'A confirmar' : money
+      });
+    }
+  }
+  return rows;
+}
+
+function extractClarinColumnTokens($, $el) {
+  if (!$el || !$el.length) return [];
+  const items = $el.find('li, p, span, div, td').filter((_, node) => {
+    return $(node).children().length === 0;
+  }).map((_, node) => cleanText($(node).text())).get().filter(Boolean);
+
+  if (items.length > 0) return items;
+  const raw = cleanText($el.text());
+  return raw ? raw.split(/\s+/).filter(Boolean) : [];
+}
+
+function parseClarinColumnsFromText(blockText, spec) {
+  // Extraer bolillas del bloque "Sorteo ..." antes de "Aciertos"
+  const norm = cleanText(blockText);
+  const sorteoSecM = norm.match(/\bSorteo\b([\s\S]*?)(?:\bAciertos\b|$)/i);
+  const bolillasText = sorteoSecM ? sorteoSecM[1] : norm;
+  const numTokens = bolillasText.match(/\b\d{1,2}\b/g) || [];
+  const bolillas = parseNumbersArray(numTokens, spec.min, spec.max, spec.expectedBolillas);
+  if (!bolillas) return null;
+
+  let numeroPlus;
+  if (spec.hasNumeroPlus) {
+    const plusM = norm.match(/(?:n[úu]mero\s+plus|bolilla\s+plus|plus)\s*[:\-]?\s*(\d)\b/i);
+    if (plusM) {
+      const n = Number(plusM[1]);
+      if (Number.isInteger(n) && n >= 0 && n <= 9) numeroPlus = n;
+    }
+  }
+
+  const acSecM = norm.match(/\bAciertos\b([\s\S]*?)(?:\bGanadores\b|\bPremios\b|$)/i);
+  const ganSecM = norm.match(/\bGanadores\b([\s\S]*?)(?:\bPremios\b|$)/i);
+  const premSecM = norm.match(/\bPremios\b([\s\S]*)$/i);
+
+  const acTokens = acSecM
+    ? (cleanText(acSecM[1]).match(/(?:est[íi]mulo|rekino|\d{1,2}(?:\s*(?:aciertos?|nros?\.?))?)/gi) || [])
+    : [];
+  const ganTokens = ganSecM
+    ? (cleanText(ganSecM[1]).match(/(?:vacante|sin\s*ganadores?|a\s*confirmar|\d{1,3}(?:\.\d{3})*|\d+)/gi) || [])
+    : [];
+  const premTokens = premSecM
+    ? (cleanText(premSecM[1]).match(/(?:\$\s*[\d.,]+(?:\s*millones)?|vacante|a\s*confirmar|[-—])/gi) || [])
+    : [];
+
+  const premios = buildClarinPremiosAligned(acTokens, ganTokens, premTokens, spec.defaultAciertos);
+  return { bolillas: bolillas.sort((a, b) => a - b), premios, numeroPlus };
+}
+
+function tryExtractClarinFromNextData(gameKey, spec, $) {
+  const nextRaw = $('script#__NEXT_DATA__').html();
+  if (!nextRaw) return null;
+  let nextJson;
+  try {
+    nextJson = JSON.parse(nextRaw);
+  } catch (_) {
+    return null;
+  }
+
+  const fallbackYear = Number(getFechaAR().slice(0, 4));
+  let foundFecha = null;
+  let foundSorteo = null;
+  let foundPlus;
+  let foundPozoProximo = null;
+  const modalidadesByName = new Map();
+
+  const walk = (node) => {
+    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item);
+      return;
+    }
+
+    // Buscar fecha y sorteo si están en el objeto
+    for (const k of ['date', 'fecha', 'drawDate', 'completeDay', 'lastDrawDate', 'subtitle']) {
+      if (!foundFecha && typeof node[k] === 'string') {
+        const pf = parseFecha(node[k], fallbackYear);
+        if (pf) foundFecha = pf;
+      }
+    }
+    for (const k of ['sorteo', 'drawNumber', 'lotteryNumber', 'numeroSorteo', 'nroSorteo']) {
+      if (!foundSorteo && (typeof node[k] === 'number' || typeof node[k] === 'string')) {
+        const m = String(node[k]).match(/\b(\d{3,6})\b/);
+        if (m) foundSorteo = Number(m[1]);
+      }
+    }
+    if (spec.hasNumeroPlus && foundPlus === undefined) {
+      for (const k of ['numeroPlus', 'plus', 'additional', 'additionalNumber', 'bonus']) {
+        if (node[k] !== undefined && node[k] !== null && /^\d$/.test(String(node[k]).trim())) {
+          foundPlus = Number(String(node[k]).trim());
+        }
+      }
+    }
+    if (!foundPozoProximo) {
+      for (const k of ['estimatedPot', 'pozoProximo', 'nextJackpot', 'pozoEstimado']) {
+        if (node[k]) {
+          const pot = formatMoney(String(node[k]));
+          if (pot && pot !== 'Vacante' && pot !== 'A confirmar') foundPozoProximo = pot;
+        }
+      }
+    }
+
+    // Detectar objeto de modalidad: nombre + array de bolillas
+    const rawName = node.name || node.nombre || node.title || node.modality || node.modalidad;
+    const rawBalls = node.results || node.bolillas || node.numbers || node.numeros || node.sorteo;
+    if (typeof rawName === 'string' && Array.isArray(rawBalls)) {
+      const modName = spec.mapModalidad(rawName);
+      if (modName && !modalidadesByName.has(modName)) {
+        const bolillas = parseNumbersArray(rawBalls, spec.min, spec.max, spec.expectedBolillas);
+        if (bolillas) {
+          let premios = [];
+          const rawPremios = node.winners_table || node.premios || node.prizes || node.awards;
+          if (Array.isArray(rawPremios) && rawPremios.length > 0) {
+            premios = parseLaNacionWinnersTable(rawPremios, spec.defaultAciertos);
+          } else if (Array.isArray(node.aciertos) || Array.isArray(node.ganadores)) {
+            premios = buildClarinPremiosAligned(
+              node.aciertos || [],
+              node.ganadores || [],
+              node.premios || [],
+              spec.defaultAciertos
+            );
+          } else {
+            premios = buildClarinPremiosAligned([], [], [], spec.defaultAciertos);
+          }
+          modalidadesByName.set(modName, {
+            nombre: modName,
+            bolillas: bolillas.sort((a, b) => a - b),
+            premios
+          });
+        }
+      }
+    }
+
+    for (const val of Object.values(node)) {
+      if (val && typeof val === 'object') walk(val);
+    }
+  };
+
+  walk(nextJson);
+  if (modalidadesByName.size === 0) return null;
+
+  return {
+    fecha: foundFecha,
+    sorteo: foundSorteo,
+    numeroPlus: foundPlus,
+    pozoProximo: foundPozoProximo,
+    modalidadesByName
+  };
+}
+
+function parseClarinFromDomAndText(gameKey, spec, $) {
+  const $bodyClone = $('body').clone();
+  $bodyClone.find('script, style, noscript, svg').remove();
+
+  // Convertir estructura HTML a texto preservando saltos entre bloques
+  $bodyClone.find('h1, h2, h3, h4, h5, p, li, tr, div, section, article').each((_, el) => {
+    $(el).prepend('\n').append('\n');
+  });
+  const rawLines = $bodyClone.text()
+    .split('\n')
+    .map(l => cleanText(l))
+    .filter(Boolean);
+  const fullText = rawLines.join('\n');
+  const flatText = cleanText(rawLines.join(' '));
+
+  const fallbackYear = Number(getFechaAR().slice(0, 4));
+  let fecha = null;
+  const ultM = flatText.match(/[ÚU]ltimos\s+resultados\s*[:\-]?\s*([^|\n]{6,80})/i);
+  if (ultM) {
+    fecha = parseFecha(ultM[1], fallbackYear);
+  }
+  if (!fecha) {
+    fecha = parseFecha($('h1, h2, .fecha, time').text(), fallbackYear) || parseFecha(flatText, fallbackYear);
+  }
+
+  let sorteo = null;
+  const cleanedForSorteo = flatText.replace(/pr[óo]ximo\s+sorteo[^.\n]{0,40}/gi, '');
+  const sorteoM = cleanedForSorteo.match(/sorteo\s*N?\.?[°º]?\s*(\d{3,6})/i);
+  if (sorteoM) sorteo = Number(sorteoM[1]);
+
+  let pozoProximo = null;
+  const pozoM = flatText.match(/(?:pozo\s+(?:pr[óo]ximo|estimado|acumulado)[^$\n]{0,40})(\$\s*[\d.,]+(?:\s*millones)?)/i);
+  if (pozoM) pozoProximo = formatMoney(pozoM[1]);
+
+  let numeroPlus;
+  if (spec.hasNumeroPlus) {
+    const plusM = flatText.match(/(?:n[úu]mero\s+plus|bolilla\s+plus|plus\s+n[°º]?)\s*[:\-]?\s*(\d)\b/i);
+    if (plusM) {
+      const n = Number(plusM[1]);
+      if (Number.isInteger(n) && n >= 0 && n <= 9) numeroPlus = n;
+    }
+  }
+
+  const modalidadesByName = new Map();
+
+  // 1) Intentar primero por contenedores DOM que contengan "Sorteo" y "Aciertos"
+  const modHeaderCandidates = [];
+  $('h1, h2, h3, h4, h5, strong, .title, [class*="modal"], [class*="title"], [class*="header"], [class*="sub"]').each((_, el) => {
+    const txt = cleanText($(el).text());
+    if (!txt || txt.length > 60) return;
+    const mapped = spec.mapModalidad(txt);
+    if (mapped) {
+      modHeaderCandidates.push({ el, mapped, raw: txt });
+    }
+  });
+
+  for (const cand of modHeaderCandidates) {
+    if (modalidadesByName.has(cand.mapped)) continue;
+    let $container = $(cand.el).parent();
+    for (let depth = 0; depth < 4 && $container.length; depth++) {
+      const cText = cleanText($container.text());
+      // Evitar contenedor padre que engloba múltiples modalidades a la vez
+      const otherMods = spec.canonicalOrder.filter(m => {
+        if (m === cand.mapped) return false;
+        const shortKey = normalizeKey(m.split(' ')[0]);
+        return shortKey.length >= 4 && normalizeKey(cText).includes(shortKey);
+      });
+      if (/sorteo/i.test(cText) && (/\baciertos\b/i.test(cText) || /\d{1,2}/.test(cText)) && otherMods.length <= 1) {
+        // Si contiene una tabla HTML estándar de premios, usar parseTablePremios
+        const $innerTable = $container.find('table').first();
+        if ($innerTable.length) {
+          const tablePremios = parseTablePremios($, $innerTable);
+          const textBeforeTable = cleanText($container.clone().find('table').remove().end().text());
+          const parsedBalls = parseClarinColumnsFromText(textBeforeTable || cText, spec);
+          if (parsedBalls && tablePremios.length > 0) {
+            modalidadesByName.set(cand.mapped, {
+              nombre: cand.mapped,
+              bolillas: parsedBalls.bolillas,
+              premios: tablePremios
+            });
+            if (numeroPlus === undefined && parsedBalls.numeroPlus !== undefined) {
+              numeroPlus = parsedBalls.numeroPlus;
+            }
+            break;
+          }
+        }
+
+        // Intentar columnas DOM explícitas si existen
+        const $cols = $container.find('[class*="acierto"], [class*="ganador"], [class*="premio"]');
+        if ($cols.length >= 2) {
+          const acEl = $container.find('[class*="acierto"]').first();
+          const ganEl = $container.find('[class*="ganador"]').first();
+          const premEl = $container.find('[class*="premio"]').first();
+          const parsed = parseClarinColumnsFromText(cText, spec);
+          if (parsed) {
+            const acList = extractClarinColumnTokens($, acEl).filter(t => !/^aciertos$/i.test(t));
+            const ganList = extractClarinColumnTokens($, ganEl).filter(t => !/^ganadores$/i.test(t));
+            const premList = extractClarinColumnTokens($, premEl).filter(t => !/^premios?$/i.test(t));
+            const premios = (acList.length || ganList.length || premList.length)
+              ? buildClarinPremiosAligned(acList, ganList, premList, spec.defaultAciertos)
+              : parsed.premios;
+            modalidadesByName.set(cand.mapped, {
+              nombre: cand.mapped,
+              bolillas: parsed.bolillas,
+              premios
+            });
+            if (numeroPlus === undefined && parsed.numeroPlus !== undefined) {
+              numeroPlus = parsed.numeroPlus;
+            }
+            break;
+          }
+        }
+        const parsed = parseClarinColumnsFromText(cText, spec);
+        if (parsed) {
+          modalidadesByName.set(cand.mapped, {
+            nombre: cand.mapped,
+            bolillas: parsed.bolillas,
+            premios: parsed.premios
+          });
+          if (numeroPlus === undefined && parsed.numeroPlus !== undefined) {
+            numeroPlus = parsed.numeroPlus;
+          }
+          break;
+        }
+      }
+      $container = $container.parent();
+    }
+  }
+
+  // 2) Fallback: segmentar el texto lineal por encabezados de modalidad
+  if (modalidadesByName.size < spec.minModalidades) {
+    const modMarkers = [];
+    for (let i = 0; i < rawLines.length; i++) {
+      const line = rawLines[i];
+      if (line.length > 60) continue;
+      const mapped = spec.mapModalidad(line);
+      if (mapped) {
+        modMarkers.push({ idx: i, mapped });
+      }
+    }
+
+    for (let m = 0; m < modMarkers.length; m++) {
+      const cur = modMarkers[m];
+      if (modalidadesByName.has(cur.mapped)) continue;
+      const nextIdx = m + 1 < modMarkers.length ? modMarkers[m + 1].idx : Math.min(rawLines.length, cur.idx + 80);
+      const blockText = rawLines.slice(cur.idx, nextIdx).join(' ');
+      const parsed = parseClarinColumnsFromText(blockText, spec);
+      if (parsed) {
+        modalidadesByName.set(cur.mapped, {
+          nombre: cur.mapped,
+          bolillas: parsed.bolillas,
+          premios: parsed.premios
+        });
+        if (numeroPlus === undefined && parsed.numeroPlus !== undefined) {
+          numeroPlus = parsed.numeroPlus;
+        }
+      }
+    }
+
+    // Caso de juego de modalidad única sin título explícito (ej. loto5 / poceada)
+    if (modalidadesByName.size === 0 && spec.canonicalOrder.length === 1) {
+      const parsed = parseClarinColumnsFromText(fullText, spec);
+      if (parsed) {
+        const onlyName = spec.canonicalOrder[0];
+        modalidadesByName.set(onlyName, {
+          nombre: onlyName,
+          bolillas: parsed.bolillas,
+          premios: parsed.premios
+        });
+        if (numeroPlus === undefined && parsed.numeroPlus !== undefined) {
+          numeroPlus = parsed.numeroPlus;
+        }
+      }
+    }
+  }
+
+  return { fecha, sorteo, numeroPlus, pozoProximo, modalidadesByName };
+}
+
+function parseClarinPoceadoFromHtml(gameKey, html, existingGameObj = null) {
+  const spec = CLARIN_POCEADOS[gameKey];
+  if (!spec) throw new Error(`Configuración de Clarín inexistente para ${gameKey}`);
+
+  const $ = cheerio.load(html);
+  const nextRes = tryExtractClarinFromNextData(gameKey, spec, $);
+  const domRes = parseClarinFromDomAndText(gameKey, spec, $);
+
+  const fecha = nextRes?.fecha || domRes.fecha;
+  if (!fecha) {
+    throw new Error(`Clarín ${gameKey}: fecha inválida o ausente`);
+  }
+
+  const rawSorteo = nextRes?.sorteo || domRes.sorteo;
+  const sorteo = resolveClarinSorteoNumber(rawSorteo, fecha, existingGameObj);
+  if (!sorteo || !Number.isInteger(sorteo) || sorteo <= 0) {
+    throw new Error(`Clarín ${gameKey}: no se pudo determinar número de sorteo (fecha=${fecha})`);
+  }
+
+  // Combinar modalidades dando prioridad al de mayor completitud
+  const mergedMods = new Map(domRes.modalidadesByName);
+  if (nextRes?.modalidadesByName) {
+    for (const [k, v] of nextRes.modalidadesByName.entries()) {
+      const prev = mergedMods.get(k);
+      if (!prev || (v.premios?.length || 0) >= (prev.premios?.length || 0)) {
+        mergedMods.set(k, v);
+      }
+    }
+  }
+
+  const modalidades = [];
+  for (const name of spec.canonicalOrder) {
+    if (mergedMods.has(name)) modalidades.push(mergedMods.get(name));
+  }
+  for (const [name, mod] of mergedMods.entries()) {
+    if (!spec.canonicalOrder.includes(name)) modalidades.push(mod);
+  }
+
+  if (modalidades.length < spec.minModalidades) {
+    throw new Error(`Clarín ${gameKey}: solo ${modalidades.length}/${spec.minModalidades} modalidades válidas`);
+  }
+
+  const draw = { sorteo, fecha, modalidades };
+  if (spec.hasNumeroPlus) {
+    let numeroPlus = nextRes?.numeroPlus ?? domRes.numeroPlus;
+    const prevUlt = existingGameObj?.ultimo;
+    if (numeroPlus === undefined && prevUlt && Number(prevUlt.sorteo) === sorteo && prevUlt.numeroPlus !== undefined) {
+      numeroPlus = prevUlt.numeroPlus;
+    }
+    if (numeroPlus !== undefined) {
+      draw.numeroPlus = numeroPlus;
+    }
+  }
+
+  const pozoProximo = nextRes?.pozoProximo || domRes.pozoProximo || null;
+  return { draw, pozoProximo, source: 'clarin.com' };
+}
+
+async function parseClarinPoceado(gameKey, url, existingGameObj = null) {
+  const html = await fetchHtml(url);
+  return parseClarinPoceadoFromHtml(gameKey, html, existingGameObj);
+}
+
 async function parsePoceadaNotitimba() {
   const html = await fetchHtml('https://www.notitimba.com/poceada/');
   const $ = cheerio.load(html);
@@ -1094,9 +1685,9 @@ function getTableImmediateHeader($, $tbl) {
   });
 
   let $node = $tbl;
-  for (let depth = 0; depth < 3; depth++) {
+  for (let depth = 0; depth < 4; depth++) {
     const $prevs = $node.prevAll();
-    for (let i = 0; i < Math.min(5, $prevs.length); i++) {
+    for (let i = 0; i < Math.min(6, $prevs.length); i++) {
       const $p = $prevs.eq(i);
       if ($p.is('table') || $p.find('table').length > 0) break;
       const t = cleanText($p.text());
@@ -1111,6 +1702,14 @@ function getTableImmediateHeader($, $tbl) {
       }
       $node = $parent;
     } else {
+      // Si el padre agrupa varias tablas (ej. fila/grilla), revisar el heading inmediato previo al padre si existe y cortar
+      const $parentPrev = $parent.prevAll('h1, h2, h3, h4, h5, .card-header, .panel-heading, strong, p, div').first();
+      if ($parentPrev.length && $parentPrev.find('table').length === 0 && !$parentPrev.is('table')) {
+        const pt = cleanText($parentPrev.text());
+        if (pt && pt.length <= 120 && !parts.some(p => p.includes(pt))) {
+          parts.unshift(pt);
+        }
+      }
       break;
     }
   }
@@ -1124,15 +1723,15 @@ function resolveLoteriasMundialesTurno(provKey, headerText) {
   const k = normalizeKey(headerText);
 
   if (provKey === 'mendoza') {
-    if (/\b(la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa;
+    if (/\b(?:la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa;
     if (/\bde\s+la\s+tarde\b/.test(k) || /\btarde\b/.test(k) || /\b17[:.,]30\b/.test(k) || /\b18[:.,]00\b/.test(k)) return cfg.turnosMap.vespertina;
     if (/\bvespertina\b/.test(k) || /\b14[:.,]00\b/.test(k) || /\b15[:.,]00\b/.test(k)) return cfg.turnosMap.matutina;
-    if (/\bmatutina\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k) || /\bprimera\b/.test(k) || /\b1[aª]\.?\s+de\s+la\s+manana\b/.test(k)) return cfg.turnosMap.primera;
+    if (/\bmatutina\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k) || /\bprimera\b/.test(k) || /\b1[aª°]?\.?\s+de\s+la\s+manana\b/.test(k)) return cfg.turnosMap.primera;
     if (/\bnocturna\b/.test(k) || /\b21[:.,]00\b/.test(k)) return cfg.turnosMap.nocturna;
     return null;
   }
 
-  if (/\b(la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa || null;
+  if (/\b(?:la\s+)?previa\b/.test(k) || /\b10[:.,]15\b/.test(k)) return cfg.turnosMap.previa || null;
   if (/\b1[aª°]?\.?\s+de\s+la\s+manana\b/.test(k) || /\b(primera|primero)\b/.test(k) || /\b11[:.,]30\b/.test(k) || /\b12[:.,]00\b/.test(k)) {
     return cfg.turnosMap.primera || cfg.turnosMap.primero || null;
   }
@@ -1229,22 +1828,46 @@ async function updateQuinielaFromLoteriasMundiales(provKey, url, data) {
   return mergeQuinielaTurnos(prov, parsedTurnos);
 }
 
-// --- Ejecución con fallback por cada poceado y quiniela ---
+// --- Selección de mejor fuente (más reciente + más completa) por poceado ---
 
-async function runWithFallbacks(gameKey, data, parsers) {
+async function runBestSource(gameKey, data, parsers) {
+  const gameCfg = data.poceados[gameKey];
+  const results = [];
   const errors = [];
+
   for (const [label, fn] of parsers) {
     try {
       const res = await fn();
-      const changed = archiveIfNewDraw(gameKey, data.poceados[gameKey], res.draw, res.pozoProximo);
-      console.log(`[${changed ? 'ACTUALIZADO' : 'SIN CAMBIOS'}] ${gameKey} | fuente=${label} | sorteo=${res.draw.sorteo} | fecha=${res.draw.fecha} | mods=${res.draw.modalidades.length}`);
-      return changed;
+      const err = validateDrawForGame(gameKey, gameCfg, res?.draw);
+      if (err) {
+        errors.push(`${label}: ${err}`);
+        continue;
+      }
+      results.push({ label, res });
     } catch (err) {
       errors.push(`${label}: ${err.message}`);
     }
   }
-  console.warn(`[AVISO] ${gameKey} falló en todas las fuentes -> ${errors.join(' | ')}`);
-  return false;
+
+  if (results.length === 0) {
+    console.warn(`[AVISO] ${gameKey} falló en todas las fuentes -> ${errors.join(' | ')}`);
+    return false;
+  }
+
+  results.sort((a, b) => {
+    const fechaCmp = String(b.res.draw.fecha || '').localeCompare(String(a.res.draw.fecha || ''));
+    if (fechaCmp !== 0) return fechaCmp;
+    const sorteoCmp = Number(b.res.draw.sorteo || 0) - Number(a.res.draw.sorteo || 0);
+    if (sorteoCmp !== 0) return sorteoCmp;
+    return drawCompletenessScore(b.res.draw) - drawCompletenessScore(a.res.draw);
+  });
+
+  const best = results[0];
+  const bestPozo = best.res.pozoProximo || results.find(r => r.res.pozoProximo)?.res.pozoProximo || null;
+  const changed = archiveIfNewDraw(gameKey, gameCfg, best.res.draw, bestPozo);
+  const summary = results.map(r => `${r.label}:${r.res.draw.fecha}#${r.res.draw.sorteo}`).join(', ');
+  console.log(`[${changed ? 'ACTUALIZADO' : 'SIN CAMBIOS'}] ${gameKey} | elegida=${best.label} | fecha=${best.res.draw.fecha} | sorteo=${best.res.draw.sorteo} | mods=${best.res.draw.modalidades.length} | candidatas=[${summary}]${errors.length ? ` | fallos=[${errors.join(' | ')}]` : ''}`);
+  return changed;
 }
 
 async function runQuinielaWithFallbacks(provKey, data) {
@@ -1279,31 +1902,38 @@ async function main() {
 
   const poceadoTasks = [
     ['quini6', [
+      ['clarin', () => parseClarinPoceado('quini6', CLARIN_POCEADOS.quini6.url, data.poceados.quini6)],
       ['lanacion', () => parseLaNacionPoceado('quini6', LA_NACION_POCEADOS.quini6.url, data.poceados.quini6?.ultimo)]
     ]],
     ['lotoPlus', [
+      ['clarin', () => parseClarinPoceado('lotoPlus', CLARIN_POCEADOS.lotoPlus.url, data.poceados.lotoPlus)],
       ['lanacion', () => parseLaNacionPoceado('lotoPlus', LA_NACION_POCEADOS.lotoPlus.url, data.poceados.lotoPlus?.ultimo)]
     ]],
     ['telekino', [
+      ['clarin', () => parseClarinPoceado('telekino', CLARIN_POCEADOS.telekino.url, data.poceados.telekino)],
       ['lanacion', () => parseLaNacionPoceado('telekino', LA_NACION_POCEADOS.telekino.url, data.poceados.telekino?.ultimo)]
     ]],
     ['brinco', [
+      ['clarin', () => parseClarinPoceado('brinco', CLARIN_POCEADOS.brinco.url, data.poceados.brinco)],
       ['lanacion', () => parseLaNacionPoceado('brinco', LA_NACION_POCEADOS.brinco.url, data.poceados.brinco?.ultimo)]
     ]],
     ['loto5', [
+      ['clarin', () => parseClarinPoceado('loto5', CLARIN_POCEADOS.loto5.url, data.poceados.loto5)],
       ['lanacion', () => parseLaNacionPoceado('loto5', LA_NACION_POCEADOS.loto5.url, data.poceados.loto5?.ultimo)]
     ]],
     ['laPoceada', [
+      ['clarin', () => parseClarinPoceado('laPoceada', CLARIN_POCEADOS.laPoceada.url, data.poceados.laPoceada)],
       ['lanacion', () => parseLaNacionPoceado('laPoceada', LA_NACION_POCEADOS.laPoceada.url, data.poceados.laPoceada?.ultimo)],
       ['notitimba', parsePoceadaNotitimba]
     ]],
     ['quinielaPlus', [
+      ['clarin', () => parseClarinPoceado('quinielaPlus', CLARIN_POCEADOS.quinielaPlus.url, data.poceados.quinielaPlus)],
       ['lanacion', () => parseLaNacionPoceado('quinielaPlus', LA_NACION_POCEADOS.quinielaPlus.url, data.poceados.quinielaPlus?.ultimo)]
     ]]
   ];
 
   for (const [gameKey, parsers] of poceadoTasks) {
-    await runWithFallbacks(gameKey, data, parsers);
+    await runBestSource(gameKey, data, parsers);
   }
 
   for (const provKey of Object.keys(QUINIELAS_CONFIG)) {
@@ -1333,9 +1963,11 @@ if (process.argv[1] && import.meta.url === `file://${path.resolve(process.argv[1
 export {
   extractLaNacionJson,
   parseLaNacionPoceadoFromHtml,
+  parseClarinPoceadoFromHtml,
   parseQuinielaFromLaNacionHtml,
   parseQuinielaFromLoteriasMundialesHtml,
   mergeQuinielaTurnos,
-  archiveIfNewDraw
+  archiveIfNewDraw,
+  runBestSource
 };
 

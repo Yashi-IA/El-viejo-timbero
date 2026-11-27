@@ -1,4 +1,4 @@
-import { initTheme, fetchResultados, formatFechaAR } from '/common.js';
+import { initTheme, fetchResultados, startAutoRefresh, formatFechaAR, formatDateTimeAR } from '/common.js';
 import { SUENOS, SUENOS_MAP } from '/suenos-data.js';
 
 initTheme();
@@ -30,12 +30,52 @@ function getLatestPublishedTurno(turnosObj) {
   return keys[0] || null;
 }
 
+function updateLastUpdatedBadge() {
+  const updEl = document.getElementById('last-updated');
+  if (updEl && data?.actualizadoEl) {
+    updEl.textContent = `Actualizado: ${formatDateTimeAR(data.actualizadoEl)}`;
+  }
+}
+
 async function boot() {
   initSuenosSearch();
   try {
     data = await fetchResultados();
+    updateLastUpdatedBadge();
     renderProvPills();
     selectProvince('ciudad');
+
+    startAutoRefresh((freshData) => {
+      const prevProv = data?.quinielas?.[currentProv];
+      const prevFechas = Object.keys(prevProv?.fechas || {}).sort().reverse();
+      const prevLatestFecha = prevFechas[0] || null;
+      const prevLatestTurno = prevLatestFecha
+        ? getLatestPublishedTurno(prevProv.fechas[prevLatestFecha])
+        : null;
+      const wasViewingLatestFecha = !currentFecha || currentFecha === prevLatestFecha;
+      const wasViewingLatestTurno = wasViewingLatestFecha && (!currentTurno || currentTurno === prevLatestTurno);
+
+      data = freshData;
+      updateLastUpdatedBadge();
+
+      const nextProv = data?.quinielas?.[currentProv];
+      const nextFechas = Object.keys(nextProv?.fechas || {}).sort().reverse();
+      const nextLatestFecha = nextFechas[0] || null;
+
+      if (wasViewingLatestFecha && nextLatestFecha) {
+        currentFecha = nextLatestFecha;
+        const nextLatestTurno = getLatestPublishedTurno(nextProv.fechas[currentFecha]);
+        if (wasViewingLatestTurno || !nextProv.fechas[currentFecha]?.[currentTurno]) {
+          currentTurno = nextLatestTurno;
+        }
+      } else if (currentFecha && !nextProv?.fechas?.[currentFecha]) {
+        currentFecha = nextLatestFecha;
+        currentTurno = currentFecha ? getLatestPublishedTurno(nextProv.fechas[currentFecha]) : null;
+      }
+
+      renderProvPills();
+      renderQuiniela();
+    });
   } catch (err) {
     const root = document.getElementById('quiniela-root');
     if (root) {

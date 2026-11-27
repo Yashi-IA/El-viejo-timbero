@@ -44,34 +44,39 @@ async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 5000) {
 }
 
 let _cacheResultados = null;
-export async function fetchResultados() {
-  if (_cacheResultados) return _cacheResultados;
+export async function fetchResultados({ force = false } = {}) {
+  if (!force && _cacheResultados) return _cacheResultados;
 
-  // 1) Rama datos en GitHub Raw (0 créditos en Netlify)
-  try {
-    _cacheResultados = await fetchJsonWithTimeout(
-      `${RAW_DATOS_URL}?t=${Date.now()}`,
+  const ts = Date.now();
+  const sources = [
+    fetchJsonWithTimeout(
+      `${JSDELIVR_DATOS_URL}?t=${ts}`,
       { cache: 'no-store' },
       5000
-    );
-    return _cacheResultados;
-  } catch (_) {
-    // Continúa con jsDelivr CDN
-  }
-
-  // 2) Fallback 1: CDN jsDelivr sobre rama datos
-  try {
-    _cacheResultados = await fetchJsonWithTimeout(
-      `${JSDELIVR_DATOS_URL}?t=${Math.floor(Date.now() / 60000)}`,
-      {},
+    ),
+    fetchJsonWithTimeout(
+      `${RAW_DATOS_URL}?t=${ts}`,
+      { cache: 'no-store' },
       5000
-    );
+    )
+  ];
+
+  const settled = await Promise.allSettled(sources);
+  const valid = settled
+    .filter(r => r.status === 'fulfilled' && r.value)
+    .map(r => r.value);
+
+  if (valid.length > 0) {
+    valid.sort((a, b) => {
+      const ta = new Date(a.actualizadoEl || 0).getTime() || 0;
+      const tb = new Date(b.actualizadoEl || 0).getTime() || 0;
+      return tb - ta;
+    });
+    _cacheResultados = valid[0];
     return _cacheResultados;
-  } catch (_) {
-    // Continúa con copia local en Netlify
   }
 
-  // 3) Fallback 2: Copia estática local
+  // Fallback: Copia estática local
   try {
     _cacheResultados = await fetchJsonWithTimeout(
       `/resultados.json?t=${Date.now()}`,
@@ -82,6 +87,47 @@ export async function fetchResultados() {
   } catch (err) {
     throw new Error(`No se pudo cargar resultados.json (${err.message})`);
   }
+}
+
+export function startAutoRefresh(onUpdate, intervalMs = 60000) {
+  let lastUpdated = _cacheResultados?.actualizadoEl || null;
+  let lastSnapshot = _cacheResultados
+    ? JSON.stringify({ poceados: _cacheResultados.poceados, quinielas: _cacheResultados.quinielas })
+    : null;
+  let lastCheckAt = Date.now();
+  let checking = false;
+
+  const checkNow = async () => {
+    if (checking) return;
+    checking = true;
+    lastCheckAt = Date.now();
+    try {
+      const nextData = await fetchResultados({ force: true });
+      const nextUpdated = nextData?.actualizadoEl || null;
+      const nextSnapshot = JSON.stringify({ poceados: nextData?.poceados, quinielas: nextData?.quinielas });
+      if (nextUpdated !== lastUpdated || nextSnapshot !== lastSnapshot) {
+        lastUpdated = nextUpdated;
+        lastSnapshot = nextSnapshot;
+        if (typeof onUpdate === 'function') {
+          onUpdate(nextData);
+        }
+        showToast('Resultados actualizados automáticamente');
+      }
+    } catch (_) {
+      // Ignorar errores de red silenciosamente en polling
+    } finally {
+      checking = false;
+    }
+  };
+
+  const timer = setInterval(checkNow, intervalMs);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && Date.now() - lastCheckAt >= 25000) {
+      checkNow();
+    }
+  });
+
+  return () => clearInterval(timer);
 }
 
 export function formatFechaAR(isoDate) {
