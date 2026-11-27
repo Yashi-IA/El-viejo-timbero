@@ -3,17 +3,9 @@ name: Actualizar Resultados Reales (El Viejo Timbero)
 on:
   workflow_dispatch:
   schedule:
-    # Horarios en UTC (Argentina es UTC-3)
-    - cron: '30 13 * * 1-6'   # 10:30 AR - La Previa
-    - cron: '20 15 * * 1-6'   # 12:20 AR - La Primera / El Primero
-    - cron: '25 18 * * *'     # 15:25 AR - Matutina + Telekino (dom)
-    - cron: '45 20 * * 0'     # 17:45 AR - Telekino escrutinio (dom)
-    - cron: '25 21 * * 1-6'   # 18:25 AR - Vespertina
-    - cron: '45 21 * * 1-6'   # 18:45 AR - Vespertina respaldo
-    - cron: '30 0 * * *'      # 21:30 AR - Nocturna, Poceada, Quiniela Plus, Quini 6, Brinco
-    - cron: '15 1 * * *'      # 22:15 AR - Escrutinios nocturnos, Quini 6, Brinco, Loto Plus
-    - cron: '55 1 * * 0,4'    # 22:55 AR (mié y sáb) - Loto Plus escrutinio + Loto 5 Plus (sáb)
-    - cron: '30 2 * * 0,4'    # 23:30 AR (mié y sáb) - Escrutinio tardío Loto Plus / Loto 5 Plus
+    # Cada 30 min en minutos fuera de pico (:17 y :47) durante la jornada de sorteos AR (10:17 a 23:47 AR)
+    - cron: '17,47 13-23 * * *'
+    - cron: '17,47 0-2 * * *'
 
 permissions:
   contents: write
