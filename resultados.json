@@ -1,5 +1,5 @@
 {
-  "actualizadoEl": "2026-11-27T18:57:45-03:00",
+  "actualizadoEl": "2026-11-28T00:53:58-03:00",
   "poceados": {
     "quini6": {
       "nombre": "Quini 6",
@@ -878,57 +878,108 @@
       ],
       "cantidadBolillas": 8,
       "ultimo": {
-        "sorteo": 9782,
-        "fecha": "2026-11-26",
+        "sorteo": 9783,
+        "fecha": "2026-11-27",
         "modalidades": [
           {
             "nombre": "Extracto de 20 números (00 al 99)",
             "bolillas": [
-              8,
-              11,
-              14,
-              15,
-              17,
+              6,
+              10,
+              18,
+              19,
               23,
-              28,
-              33,
+              25,
+              30,
+              31,
               37,
-              38,
-              46,
-              58,
-              68,
-              77,
-              78,
+              44,
+              48,
+              55,
+              59,
+              65,
+              72,
+              74,
+              82,
               83,
-              85,
-              87,
-              91,
-              98
+              94,
+              95
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 947.496.902,00",
+                "pozo": "$ 962.518.870,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "7 aciertos",
-                "ganadores": 2,
-                "pozo": "$ 3.219.793,00",
-                "premioIndividual": "$ 3.219.793,00"
+                "ganadores": 1,
+                "pozo": "$ 3.326.373,00",
+                "premioIndividual": "$ 3.326.373,00"
               },
               {
                 "aciertos": "6 aciertos",
-                "ganadores": 27,
-                "pozo": "$ 1.878.213,00",
-                "premioIndividual": "$ 1.878.213,00"
+                "ganadores": 23,
+                "pozo": "$ 84.365,00",
+                "premioIndividual": "$ 84.365,00"
               }
             ]
           }
         ]
       },
       "historico": [
+        {
+          "sorteo": 9782,
+          "fecha": "2026-11-26",
+          "modalidades": [
+            {
+              "nombre": "Extracto de 20 números (00 al 99)",
+              "bolillas": [
+                8,
+                11,
+                14,
+                15,
+                17,
+                23,
+                28,
+                33,
+                37,
+                38,
+                46,
+                58,
+                68,
+                77,
+                78,
+                83,
+                85,
+                87,
+                91,
+                98
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 947.496.902,00",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "7 aciertos",
+                  "ganadores": 2,
+                  "pozo": "$ 3.219.793,00",
+                  "premioIndividual": "$ 3.219.793,00"
+                },
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": 27,
+                  "pozo": "$ 1.878.213,00",
+                  "premioIndividual": "$ 1.878.213,00"
+                }
+              ]
+            }
+          ]
+        },
         {
           "sorteo": 9781,
           "fecha": "2026-11-25",
@@ -1000,55 +1051,55 @@
       ],
       "cantidadBolillas": 8,
       "ultimo": {
-        "sorteo": 12925,
-        "fecha": "2026-11-26",
+        "sorteo": 12926,
+        "fecha": "2026-11-27",
         "modalidades": [
           {
             "nombre": "Quiniela Plus (Tradicional)",
             "bolillas": [
-              1,
               5,
-              13,
-              14,
+              10,
+              16,
               19,
-              32,
-              38,
-              39,
-              44,
+              21,
+              26,
+              29,
+              30,
+              35,
               48,
-              69,
-              73,
-              80,
-              81,
-              82,
-              84,
-              90,
-              92,
+              50,
+              51,
+              53,
+              56,
+              60,
+              62,
+              78,
+              91,
               93,
-              96
+              94
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 78.094.195,20",
+                "pozo": "$ 103.731.727,25",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "7 aciertos",
-                "ganadores": 1,
+                "ganadores": 4,
                 "pozo": "$ 2.000.000,00",
                 "premioIndividual": "$ 2.000.000,00"
               },
               {
                 "aciertos": "6 aciertos",
-                "ganadores": 83,
+                "ganadores": 85,
                 "pozo": "$ 50.000,00",
                 "premioIndividual": "$ 50.000,00"
               },
               {
                 "aciertos": "5 aciertos",
-                "ganadores": 799,
+                "ganadores": 901,
                 "pozo": "$ 5.000,00",
                 "premioIndividual": "$ 5.000,00"
               }
@@ -1057,90 +1108,243 @@
           {
             "nombre": "Super Plus",
             "bolillas": [
-              3,
-              6,
-              8,
-              25,
+              4,
+              21,
+              26,
               27,
-              38,
-              47,
-              60,
-              66,
-              68,
+              33,
+              41,
+              45,
+              51,
+              52,
+              53,
+              54,
+              57,
+              65,
               70,
-              72,
-              73,
-              74,
               79,
-              86,
+              80,
               88,
-              90,
-              95,
-              97
+              91,
+              96,
+              98
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
-                "ganadores": 3,
-                "pozo": "$ 3.729.570,00",
-                "premioIndividual": "$ 3.729.570,00"
+                "ganadores": "Vacante",
+                "pozo": "$ 11.587.050,00",
+                "premioIndividual": "Vacante"
+              },
+              {
+                "aciertos": "7 aciertos",
+                "ganadores": 5,
+                "pozo": "$ 2.317.410,00",
+                "premioIndividual": "$ 2.317.410,00"
               }
             ]
           },
           {
             "nombre": "Chance Plus",
             "bolillas": [
-              0,
-              9,
+              5,
+              10,
+              12,
+              14,
               15,
-              21,
-              23,
-              33,
-              37,
-              38,
-              48,
-              51,
-              53,
-              58,
-              66,
-              68,
-              70,
-              74,
-              81,
-              84,
-              89,
-              91
+              16,
+              17,
+              19,
+              25,
+              35,
+              45,
+              49,
+              59,
+              61,
+              63,
+              71,
+              73,
+              82,
+              92,
+              93
             ],
             "premios": [
               {
                 "aciertos": "8 aciertos",
                 "ganadores": "Vacante",
-                "pozo": "$ 141.171.654,00",
+                "pozo": "$ 150.055.059,00",
                 "premioIndividual": "Vacante"
               },
               {
                 "aciertos": "7 aciertos",
-                "ganadores": 2,
+                "ganadores": 5,
                 "pozo": "$ 700.000,00",
                 "premioIndividual": "$ 700.000,00"
               },
               {
                 "aciertos": "6 aciertos",
-                "ganadores": 65,
+                "ganadores": 158,
                 "pozo": "$ 30.000,00",
                 "premioIndividual": "$ 30.000,00"
               },
               {
                 "aciertos": "5 aciertos",
-                "ganadores": 576,
+                "ganadores": 137,
                 "pozo": "$ 5.000,00",
                 "premioIndividual": "$ 5.000,00"
+              },
+              {
+                "aciertos": "8 aciertos",
+                "ganadores": "Vacante",
+                "pozo": "Vacante",
+                "premioIndividual": "Vacante"
               }
             ]
           }
         ]
       },
       "historico": [
+        {
+          "sorteo": 12925,
+          "fecha": "2026-11-26",
+          "modalidades": [
+            {
+              "nombre": "Quiniela Plus (Tradicional)",
+              "bolillas": [
+                1,
+                5,
+                13,
+                14,
+                19,
+                32,
+                38,
+                39,
+                44,
+                48,
+                69,
+                73,
+                80,
+                81,
+                82,
+                84,
+                90,
+                92,
+                93,
+                96
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 78.094.195,20",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "7 aciertos",
+                  "ganadores": 1,
+                  "pozo": "$ 2.000.000,00",
+                  "premioIndividual": "$ 2.000.000,00"
+                },
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": 83,
+                  "pozo": "$ 50.000,00",
+                  "premioIndividual": "$ 50.000,00"
+                },
+                {
+                  "aciertos": "5 aciertos",
+                  "ganadores": 799,
+                  "pozo": "$ 5.000,00",
+                  "premioIndividual": "$ 5.000,00"
+                }
+              ]
+            },
+            {
+              "nombre": "Super Plus",
+              "bolillas": [
+                3,
+                6,
+                8,
+                25,
+                27,
+                38,
+                47,
+                60,
+                66,
+                68,
+                70,
+                72,
+                73,
+                74,
+                79,
+                86,
+                88,
+                90,
+                95,
+                97
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": 3,
+                  "pozo": "$ 3.729.570,00",
+                  "premioIndividual": "$ 3.729.570,00"
+                }
+              ]
+            },
+            {
+              "nombre": "Chance Plus",
+              "bolillas": [
+                0,
+                9,
+                15,
+                21,
+                23,
+                33,
+                37,
+                38,
+                48,
+                51,
+                53,
+                58,
+                66,
+                68,
+                70,
+                74,
+                81,
+                84,
+                89,
+                91
+              ],
+              "premios": [
+                {
+                  "aciertos": "8 aciertos",
+                  "ganadores": "Vacante",
+                  "pozo": "$ 141.171.654,00",
+                  "premioIndividual": "Vacante"
+                },
+                {
+                  "aciertos": "7 aciertos",
+                  "ganadores": 2,
+                  "pozo": "$ 700.000,00",
+                  "premioIndividual": "$ 700.000,00"
+                },
+                {
+                  "aciertos": "6 aciertos",
+                  "ganadores": 65,
+                  "pozo": "$ 30.000,00",
+                  "premioIndividual": "$ 30.000,00"
+                },
+                {
+                  "aciertos": "5 aciertos",
+                  "ganadores": 576,
+                  "pozo": "$ 5.000,00",
+                  "premioIndividual": "$ 5.000,00"
+                }
+              ]
+            }
+          ]
+        },
         {
           "sorteo": 12924,
           "fecha": "2026-11-25",
@@ -1928,6 +2132,62 @@
               "5512",
               "5996"
             ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "letras": "A-E-P-S",
+            "extracto": [
+              "5210",
+              "5983",
+              "0255",
+              "5348",
+              "6559",
+              "9706",
+              "0674",
+              "0072",
+              "4294",
+              "9282",
+              "6623",
+              "8125",
+              "1744",
+              "2337",
+              "3919",
+              "1559",
+              "5965",
+              "0218",
+              "0830",
+              "7395"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 0,
+            "letras": "E-I-B-F",
+            "extracto": [
+              "7878",
+              "2762",
+              "3462",
+              "4276",
+              "8440",
+              "8305",
+              "4072",
+              "3024",
+              "4551",
+              "7610",
+              "0810",
+              "4299",
+              "2971",
+              "2621",
+              "8894",
+              "2377",
+              "9796",
+              "0458",
+              "7857",
+              "1795"
+            ]
           }
         }
       }
@@ -2593,6 +2853,33 @@
               "3151",
               "0906"
             ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": [
+              "9193",
+              "9178",
+              "9610",
+              "2162",
+              "2630",
+              "2160",
+              "5716",
+              "2156",
+              "2735",
+              "8821",
+              "7926",
+              "5105",
+              "5451",
+              "4148",
+              "5250",
+              "5491",
+              "9829",
+              "4594",
+              "5351",
+              "7053"
+            ]
           }
         }
       }
@@ -3072,6 +3359,60 @@
               "5870",
               "0317",
               "2250"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": [
+              "5497",
+              "4496",
+              "6955",
+              "9796",
+              "8581",
+              "7390",
+              "0563",
+              "8673",
+              "2197",
+              "4251",
+              "7430",
+              "3164",
+              "3515",
+              "9628",
+              "0273",
+              "5131",
+              "0209",
+              "4903",
+              "2076",
+              "8406"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 0,
+            "extracto": [
+              "7562",
+              "2769",
+              "9502",
+              "0966",
+              "2042",
+              "3263",
+              "3751",
+              "0037",
+              "2185",
+              "7844",
+              "5227",
+              "7629",
+              "2619",
+              "3901",
+              "0332",
+              "3845",
+              "9416",
+              "8982",
+              "0509",
+              "2927"
             ]
           }
         }
@@ -3636,6 +3977,87 @@
               "9723",
               "5216"
             ]
+          },
+          "turista": {
+            "nombre": "Turista",
+            "hora": "22:15",
+            "sorteo": 0,
+            "extracto": [
+              "8577",
+              "5363",
+              "4296",
+              "0343",
+              "8867",
+              "0156",
+              "4169",
+              "2595",
+              "2310",
+              "8188",
+              "2534",
+              "6412",
+              "0788",
+              "9299",
+              "9253",
+              "3271",
+              "9399",
+              "9454",
+              "1143",
+              "3343"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": [
+              "0300",
+              "3752",
+              "8395",
+              "3286",
+              "3580",
+              "2434",
+              "8196",
+              "4883",
+              "6407",
+              "5638",
+              "6008",
+              "7428",
+              "1137",
+              "3250",
+              "0051",
+              "2817",
+              "7620",
+              "6202",
+              "3747",
+              "8834"
+            ]
+          },
+          "vespertina": {
+            "nombre": "Vespertina",
+            "hora": "18:00",
+            "sorteo": 0,
+            "extracto": [
+              "4853",
+              "0017",
+              "8349",
+              "9021",
+              "5183",
+              "3003",
+              "6326",
+              "0769",
+              "1669",
+              "2309",
+              "3256",
+              "7700",
+              "9897",
+              "1232",
+              "4459",
+              "5569",
+              "7492",
+              "0607",
+              "2597",
+              "2637"
+            ]
           }
         }
       }
@@ -4143,6 +4565,33 @@
               "3319",
               "0781"
             ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": [
+              "6772",
+              "2372",
+              "5628",
+              "6899",
+              "2705",
+              "9314",
+              "6995",
+              "5927",
+              "3335",
+              "3641",
+              "3598",
+              "3844",
+              "0029",
+              "7547",
+              "4565",
+              "9275",
+              "0181",
+              "3570",
+              "7607",
+              "7794"
+            ]
           }
         }
       }
@@ -4595,6 +5044,33 @@
               "0434",
               "0050",
               "7557"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": [
+              "4382",
+              "3524",
+              "4325",
+              "7995",
+              "7349",
+              "9282",
+              "5513",
+              "8951",
+              "0236",
+              "0323",
+              "8027",
+              "2631",
+              "6558",
+              "1246",
+              "1793",
+              "1460",
+              "8890",
+              "3735",
+              "1863",
+              "7934"
             ]
           }
         }
@@ -5075,6 +5551,33 @@
               "8877",
               "1165",
               "1262"
+            ]
+          },
+          "nocturna": {
+            "nombre": "Nocturna",
+            "hora": "21:00",
+            "sorteo": 0,
+            "extracto": [
+              "2643",
+              "5492",
+              "8862",
+              "4919",
+              "1004",
+              "0537",
+              "4305",
+              "5686",
+              "6907",
+              "5415",
+              "1986",
+              "6032",
+              "5381",
+              "8536",
+              "3956",
+              "9280",
+              "4850",
+              "2141",
+              "3055",
+              "4448"
             ]
           }
         }
